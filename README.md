@@ -10,6 +10,8 @@
 This is an program to display discord overlays (voice chat/messages/server status) in any fullscreen application under macOS.  
 Since discord does not officially support overlays so I made this program for me when playing the rhythm game "osu!".  
 
+https://user-images.githubusercontent.com/52615455/156926821-2f78b692-c6e1-4753-978c-cf214c938379.mp4
+
 The program is made with discord streamkit so keep in mind that some features are not supported due to limitations.
 
 Features      | Work
