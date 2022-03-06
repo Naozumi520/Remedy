@@ -6,6 +6,8 @@
   <br>
 </h1>
 
+[![JavaScript Style Guide](https://cdn.rawgit.com/standard/standard/master/badge.svg)](https://github.com/standard/standard)
+
 # Introduction
 This is an program to display discord overlays (voice chat/messages/server status) in any fullscreen application under macOS.  
 Since discord does not officially support overlays so I made this program for me when playing the rhythm game "osu!".  
