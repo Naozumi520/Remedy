@@ -21,7 +21,7 @@ Show an eye when someone is watching your stream | :x:
 Show the stream icon when someone is streaming | :x:
 
 ## Installation
-Download the .dmg from release page, open the .dmg file and drag the `discordOverlay.app` to the Applications folder.
+Download the .dmg from [release page](https://github.com/Naozumi520/discordOverlayMac/releases/edit/untagged-1f72c3ba8b82418ca30a), open the .dmg file and drag the `discordOverlay.app` to the Applications folder.
 
 ## How to use
 In the menu Click either button (won't affect anything) to enter the overlay setup.  
