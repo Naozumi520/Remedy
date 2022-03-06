@@ -1,6 +1,6 @@
 {
   "name": "dcoverlay",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Unofficial Discord overlay support for MacOS",
   "main": "main.js",
   "scripts": {

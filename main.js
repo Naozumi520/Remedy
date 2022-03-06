@@ -16,6 +16,7 @@ async function createWindow() {
       icon: './src/icon/favicon.png',
       width: size.width / 1.75,
       height: size.height / 1.75,
+      fullscreen: false,
       center: true,
       webPreferences: {
         backgroundThrottling: false,
@@ -26,6 +27,9 @@ async function createWindow() {
     const browser = await pie.connect(app, puppeteer)
     const page = await pie.getPage(browser, initializer)
     await page.goto('https://streamkit.discord.com/overlay')
+    initializer.on('window-all-closed', () => {
+      app.quit()
+    })
     initializer.webContents.on('before-input-event', async (event, input) => {
       if (input.control && input.key.toLowerCase() === 'enter') {
         event.preventDefault()
@@ -70,11 +74,5 @@ createWindow()
 app.on('activate', () => {
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow()
-  }
-})
-
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit()
   }
 })
