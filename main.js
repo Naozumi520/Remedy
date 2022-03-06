@@ -1,16 +1,14 @@
 const { app, BrowserWindow, screen, dialog } = require('electron')
-const path = require('path')
 const pie = require('puppeteer-in-electron')
 const puppeteer = require('puppeteer-core')
-const is_mac = process.platform === 'darwin'
-if (is_mac) {
+if (process.platform === 'darwin') {
   app.dock.hide()
 }
 
-async function createWindow() {
+async function createWindow () {
   await pie.initialize(app)
   app.on('ready', async () => {
-    const size = screen.getPrimaryDisplay().workAreaSize;
+    const size = screen.getPrimaryDisplay().workAreaSize
     const initializer = new BrowserWindow({
       title: 'DiscordOverlayMac',
       icon: './src/icon/favicon.png',
@@ -34,14 +32,14 @@ async function createWindow() {
       if (input.control && input.key.toLowerCase() === 'enter') {
         event.preventDefault()
         try {
-          const overlaySelector = await page.waitForSelector('#app-mount > div > div > div.install.is-open > div.config-link > div:nth-child(3) > input', { timeout: 500 });
-          var overlayUrl = await overlaySelector.evaluate(el => el.value);
+          const overlaySelector = await page.waitForSelector('#app-mount > div > div > div.install.is-open > div.config-link > div:nth-child(3) > input', { timeout: 500 })
+          var overlayUrl = await overlaySelector.evaluate(el => el.value)
         } catch (e) {
           return dialog.showMessageBox(initializer, {
             buttons: ['OK'],
             type: 'warning',
-            message: 'Coudn\'t find the overlay URL.\n\nEnither click both button should be work.\nJust make sure you\'ve clicked the button.',
-          });
+            message: 'Coudn\'t find the overlay URL.\n\nEnither click both button should be work.\nJust make sure you\'ve clicked the button.'
+          })
         }
         if (overlayUrl) {
           const overlay = new BrowserWindow({
@@ -56,13 +54,13 @@ async function createWindow() {
               zoomFactor: 0.85
             }
           })
-          overlay.setAlwaysOnTop(true, "screen-saver")
+          overlay.setAlwaysOnTop(true, 'screen-saver')
           overlay.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
-          overlay.setIgnoreMouseEvents(true);
-          overlay.setFocusable(false);
-          overlay.webContents.setZoomFactor(90);
+          overlay.setIgnoreMouseEvents(true)
+          overlay.setFocusable(false)
+          overlay.webContents.setZoomFactor(90)
           overlay.loadURL(overlayUrl)
-          await page.waitForSelector('#app-mount > div > div > div.install.is-open > div.config-link > div:nth-child(3) > input', { hidden: true, timeout: 0 });
+          await page.waitForSelector('#app-mount > div > div > div.install.is-open > div.config-link > div:nth-child(3) > input', { hidden: true, timeout: 0 })
           return overlay.close()
         }
       }
