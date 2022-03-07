@@ -15,6 +15,7 @@ async function createWindow () {
       width: size.width / 1.75,
       height: size.height / 1.75,
       fullscreen: false,
+      minimizable: false,
       center: true,
       webPreferences: {
         backgroundThrottling: false,
