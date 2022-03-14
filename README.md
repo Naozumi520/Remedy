@@ -35,6 +35,6 @@ To stop the overlay you can just click the blue "x" button and for the whole pro
 Other modes like server status/channel messages work fine as well!
 
 ## Credit
-### [trigg](https://github.com/trigg) / [DiscordOverlayLinux](https://github.com/trigg/DiscordOverlayLinux)
+### [trigg](https://github.com/trigg) / [Discover](https://github.com/trigg/Discover)
 Trigg shows us the possibility of getting mute/deafen status on the discord streamkit.  
 His project has inspired me a lot.
