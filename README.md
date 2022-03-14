@@ -16,13 +16,13 @@ https://user-images.githubusercontent.com/52615455/156926821-2f78b692-c6e1-4753-
 
 The program is made with discord streamkit so keep in mind that some features are not supported due to limitations.
 
-Features      | Work
-------------- | -------------
-Show users when someone joining the vc | :white_check_mark:
-Green border around the avatar when someone speaks | :white_check_mark:
-Show the mute/deafen status | :x:
-Show an eye when someone is watching your stream | :x:
-Show the stream icon when someone is streaming | :x:
+| Features                                           | Work               |
+| -------------------------------------------------- | ------------------ |
+| Show users when someone joining the vc             | :white_check_mark: |
+| Green border around the avatar when someone speaks | :white_check_mark: |
+| Show the mute/deafen status                        | :white_check_mark: |
+| Show an eye when someone is watching your stream   | :x:                |
+| Show the stream icon when someone is streaming     | :x:                |
 
 ## Installation
 Download the .dmg from [release page](https://github.com/Naozumi520/discordOverlayMac/releases/edit/untagged-1f72c3ba8b82418ca30a), open the .dmg file and drag the `discordOverlay.app` to the Applications folder.
@@ -33,3 +33,8 @@ Adjust as you want then press `control^ + enter` key to start the overlay.
 To stop the overlay you can just click the blue "x" button and for the whole program just close the program directly.
 
 Other modes like server status/channel messages work fine as well!
+
+## Credit
+### [trigg](https://github.com/trigg) / [DiscordOverlayLinux](https://github.com/trigg/DiscordOverlayLinux)
+Trigg shows us the possibility of getting mute/deafen status on the discord streamkit.  
+His project has inspired me a lot.
