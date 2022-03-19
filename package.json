@@ -1,6 +1,6 @@
 {
   "name": "dcoverlay",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Unofficial Discord overlay support for MacOS",
   "main": "main.js",
   "scripts": {
@@ -16,12 +16,12 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "puppeteer-core": "^13.4.1",
+    "puppeteer-core": "^13.5.1",
     "puppeteer-in-electron": "^3.0.5"
   },
   "devDependencies": {
-    "electron": "^17.1.0",
-    "electron-builder": "^22.14.13",
+    "electron": "^17.1.2",
+    "electron-builder": "^23.0.2",
     "standard": "^16.0.4"
   }
 }
