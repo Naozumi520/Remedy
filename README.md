@@ -1,7 +1,7 @@
 <h1 align="center">
   <a href="https://github.com/Naozumi520/discordOverlayMac"><img src="./src/icon/favicon.png" avtar_c_icon" width="200"></a>
   <br>
-  discordOverlayMac
+  Remedy
   <br>
   <br>
 </h1>
@@ -9,30 +9,25 @@
 [![JavaScript Style Guide](https://cdn.rawgit.com/standard/standard/master/badge.svg)](https://github.com/standard/standard)
 
 # Introduction
-This is an program to display discord overlays (voice chat/messages/server status) in any fullscreen application under macOS.  
-Since discord does not officially support overlays so I made this program for me when playing the rhythm game "osu!".  
+Remedy is a application for displaying an overlay of discord voice channels even in fullscreen application under macOS.  
 
-https://user-images.githubusercontent.com/52615455/156926821-2f78b692-c6e1-4753-978c-cf214c938379.mp4
+# Motivation
+I made this app because the discord overlay is currently only available for Windows. This annoys me a bit because I use the feature a lot. (Who doesn't want to some little games and chat even on the mac?)
 
-The program is made with discord streamkit so keep in mind that some features are not supported due to limitations.
+# About the application
+Remedy comes in two editions, Standard and Pro. This app was made using the Discord streaming kit which had limited function, so in order to perform like the official Discord client (see the table below), some tricks have to be used. But it uses some selfbot-related tricks which against the Discord TOS. If you're not happy with that, you can just use the standard version, but it's convenient.
 
-| Features                                           | Work               |
-| -------------------------------------------------- | ------------------ |
-| Show users when someone joining the vc             | :white_check_mark: |
-| Green border around the avatar when someone speaks | :white_check_mark: |
-| Show the mute/deafen status                        | :white_check_mark: |
-| Show an eye when someone is watching your stream   | :x:                |
-| Show the stream icon when someone is streaming     | :x:                |
+| Features                                                 | Standard           | Pro                |
+| -------------------------------------------------------- | ------------------ | ------------------ |
+| Show users when someone joining the vc                   | :white_check_mark: | :white_check_mark: |
+| Green border around the avatar when someone speaks       | :white_check_mark: | :white_check_mark: |
+| Show the mute/deafen status                              | :white_check_mark: | :white_check_mark: |
+| Detect which VC your in and create overlay automatically | :x:                | :white_check_mark: |
+| Show an eye when someone is watching your stream         | :x:                | :x:                |
+| Show the stream icon when someone is streaming           | :x:                | :x:                |
 
-## Installation
-Download the .dmg from [release page](https://github.com/Naozumi520/discordOverlayMac/releases/edit/untagged-1f72c3ba8b82418ca30a), open the .dmg file and drag the `discordOverlay.app` to the Applications folder.
-
-## How to use
-In the menu Click either button (won't affect anything) to enter the overlay setup.  
-Adjust as you want then press `control^ + enter` key to start the overlay.  
-To stop the overlay you can just click the blue "x" button and for the whole program just close the program directly.
-
-Other modes like server status/channel messages work fine as well!
+## Usage
+[Standard](Standard.md) | [Pro](Pro.md)
 
 ## Credit
 ### [trigg](https://github.com/trigg) / [Discover](https://github.com/trigg/Discover)

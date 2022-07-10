@@ -1,21 +1,29 @@
 {
-  "name": "dcoverlay",
+  "name": "remedy",
   "version": "1.0.3",
   "description": "Unofficial Discord overlay support for MacOS",
-  "main": "main.js",
+  "main": "src/main.js",
   "scripts": {
     "pack": "electron-builder --mac"
   },
   "build": {
-    "productName": "DiscordOverlayMac",
+    "productName": "Remedy",
     "mac": {
-      "icon": "./src/icon/favicon.png"
+      "icon": "./src/icon/favicon.png",
+      "asar": true,
+      "extendInfo": {
+        "LSUIElement": 1
+      }
     }
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "custom-electron-prompt": "^1.5.0",
+    "discord.js-selfbot-v13": "^2.3.65",
+    "electron-json-storage": "^4.5.0",
+    "electron-preferences": "^2.6.0",
     "puppeteer-core": "^13.5.1",
     "puppeteer-in-electron": "^3.0.5"
   },
