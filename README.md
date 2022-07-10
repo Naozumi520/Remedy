@@ -8,6 +8,8 @@
 
 [![JavaScript Style Guide](https://cdn.rawgit.com/standard/standard/master/badge.svg)](https://github.com/standard/standard)
 
+# `Currently WIP`  
+
 # Introduction
 Remedy is a application for displaying an overlay of discord voice channels even in fullscreen application under macOS.  
 
@@ -15,7 +17,7 @@ Remedy is a application for displaying an overlay of discord voice channels even
 I made this app because the discord overlay is currently only available for Windows. This annoys me a bit because I use the feature a lot. (Who doesn't want to some little games and chat even on the mac?)
 
 # About the application
-Remedy comes in two editions, Standard and Pro. This app was made using the Discord streaming kit which had limited function, so in order to perform like the official Discord client (see the table below), some tricks have to be used. But it uses some selfbot-related tricks which against the Discord TOS. If you're not happy with that, you can just use the standard version, but it's convenient.
+Remedy comes in two editions, Standard and Pro. This app was made using the Discord streaming kit which had limited function, so in order to perform like the official Discord client (see the table below), some tricks have to be used. But it uses some selfbot-related tricks which against the Discord TOS. If you're not happy with that, you can just use the standard version, but it's less convenient.
 
 | Features                                                 | Standard           | Pro                |
 | -------------------------------------------------------- | ------------------ | ------------------ |
