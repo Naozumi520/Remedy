@@ -1,5 +1,5 @@
 <h1 align="center">
-  <a href="https://github.com/Naozumi520/discordOverlayMac"><img style='height: 50%; width: 50%; object-fit: contain' src="./src/icon/favicon.png" avtar_c_icon" width="200"></a>
+  <a href="https://github.com/Naozumi520/discordOverlayMac"><img src="./src/icon/favicon.png" avtar_c_icon" width="200"></a>
   <br>
   Remedy Pro
   <br>
