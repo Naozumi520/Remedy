@@ -1,5 +1,5 @@
 {
-  "name": "remedy",
+  "name": "remedypro",
   "version": "1.0.3",
   "description": "Unofficial Discord overlay support for MacOS",
   "main": "src/main.js",
@@ -7,7 +7,7 @@
     "pack": "electron-builder --mac"
   },
   "build": {
-    "productName": "Remedy",
+    "productName": "Remedy Pro",
     "mac": {
       "icon": "./src/icon/favicon.png",
       "asar": true,

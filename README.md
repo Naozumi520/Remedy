@@ -8,8 +8,6 @@
 
 [![JavaScript Style Guide](https://cdn.rawgit.com/standard/standard/master/badge.svg)](https://github.com/standard/standard)
 
-# `Currently WIP`  
-
 # Introduction
 Remedy is a application for displaying an overlay of discord voice channels even in fullscreen application under macOS.  
 
