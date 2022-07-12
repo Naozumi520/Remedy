@@ -21,7 +21,7 @@ const defaultSettings = {
 
 const preferences = new ElectronPreferences({
     dataStore: path.resolve(app.getPath('userData'), 'config.json'),
-    debug: false,
+    debug: true,
     defaults: defaultSettings,
     browserWindowOverrides: {
         title: `Preferences | ${app.name}`,
