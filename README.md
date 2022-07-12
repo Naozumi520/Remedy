@@ -35,3 +35,7 @@ Remedy comes in two editions, Standard and Pro. This app was made using the Disc
 ### [trigg](https://github.com/trigg) / [Discover](https://github.com/trigg/Discover)
 Trigg shows us the possibility of getting mute/deafen status on the discord streamkit.  
 His project has inspired me a lot.
+
+### [Ganbin](https://github.com/Ganbin)
+Ganbin help fixed the issue that the adjust options are not working [#1](https://github.com/Naozumi520/Remedy/issues/1).
+
