@@ -6,7 +6,7 @@ const storage = require('electron-json-storage')
 const pie = require('puppeteer-in-electron')
 const puppeteer = require('puppeteer-core')
 const { preferences } = require('./preferences.js')
-let tray, page, service, overlay, serverId, channelId
+let tray, page, service, overlay, contextMenu, serverId, channelId
 let overlayUnpinned = false
 
 nativeTheme.themeSource = 'dark'
@@ -19,7 +19,7 @@ if (process.platform === 'darwin') {
   app.dock.hide()
 }
 
-function log (message, type) {
+function log(message, type) {
   message.split('\n').forEach(line => console.log(`Remedy Pro [${type || 'info'}]: ${line}`))
 };
 
@@ -27,12 +27,12 @@ client.on('ready', async () => {
   log(`logged in with account ${client.user.username}.`)
 })
 
-async function initialize () {
+async function initialize() {
   log(`Starting services\nVersion ${require('../package.json').version}`, 'client')
   await pie.initialize(app)
 }
 
-async function createWindow () {
+async function createWindow() {
   log('Creating window...', 'client')
   storage.get('screenPosition', function (error, object) {
     if (object.windowState) {
@@ -40,8 +40,8 @@ async function createWindow () {
       windowState = object.windowState
     }
   })
-  function Createmenu (tab1, tab2, tab3) {
-    const contextMenu = Menu.buildFromTemplate([
+  function Createmenu(tab1, tab2, tab3) {
+    contextMenu = Menu.buildFromTemplate([
       {
         label: tab1,
         click: function () {
@@ -54,6 +54,7 @@ async function createWindow () {
       },
       {
         label: tab2,
+        enabled: false,
         click: async function () {
           Createmenu('Preferences menu', !overlayUnpinned ? 'Pin overlay' : 'Unpin overlay', 'Close')
           overlayUnpinned = !overlayUnpinned
@@ -77,6 +78,7 @@ async function createWindow () {
       }
     ])
     tray.setContextMenu(contextMenu)
+    return contextMenu
   }
   Createmenu('Preferences menu', 'Unpin overlay', 'Close')
   service = new BrowserWindow({
@@ -119,7 +121,7 @@ app.on('ready', async () => {
 
 client.on('voiceStateUpdate', async (oldState, newState) => {
   const member = newState.member
-  if (member.user == client.user) {
+  if (member?.user == client.user) {
     if (oldState.selfMute === true && newState.selfMute === false) {
       return
     }
@@ -166,9 +168,12 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
             pointer-events: none;
           }
         `)
+        contextMenu.items[1].enabled = true
       }
     } else {
       overlay?.close()
+      contextMenu.items[1].enabled = false
+      // to do - pin the overlay if it's not pinned yet, not only disable it.
       return overlay = undefined
     }
   }
