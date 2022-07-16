@@ -21,7 +21,7 @@ const defaultSettings = {
 
 const preferences = new ElectronPreferences({
   dataStore: path.resolve(app.getPath('userData'), 'config.json'),
-  debug: true,
+  debug: false,
   defaults: defaultSettings,
   browserWindowOverrides: {
     title: `Preferences | ${app.name}`,
@@ -29,6 +29,7 @@ const preferences = new ElectronPreferences({
     resizable: false,
     maximizable: false
   },
+  css: 'src/preferencesstyling.css',
   sections: [
     {
       id: 'Interface',

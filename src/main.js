@@ -6,17 +6,15 @@ const storage = require('electron-json-storage')
 const pie = require('puppeteer-in-electron')
 const puppeteer = require('puppeteer-core')
 const { preferences } = require('./preferences.js')
-let tray, page, service, overlay, contextMenu, serverId, channelId
+let tray, page, service, overlay, contextMenu, createMenuOuter, serverId, channelId
 let overlayUnpinned = false
 
 nativeTheme.themeSource = 'dark'
+app.dock.hide()
 
 let windowState = {
   x: 0,
   y: 0
-}
-if (process.platform === 'darwin') {
-  app.dock.hide()
 }
 
 function log(message, type) {
@@ -40,7 +38,7 @@ async function createWindow() {
       windowState = object.windowState
     }
   })
-  function Createmenu(tab1, tab2, tab3) {
+  function createMenu(tab1, tab2, tab3) {
     contextMenu = Menu.buildFromTemplate([
       {
         label: tab1,
@@ -56,7 +54,8 @@ async function createWindow() {
         label: tab2,
         enabled: false,
         click: async function () {
-          Createmenu('Preferences menu', !overlayUnpinned ? 'Pin overlay' : 'Unpin overlay', 'Close')
+          createMenu('Preferences menu', !overlayUnpinned ? 'Pin overlay' : 'Unpin overlay', 'Close')
+          contextMenu.items[1].enabled = true
           overlayUnpinned = !overlayUnpinned
           if (overlayUnpinned) {
             overlay.setIgnoreMouseEvents(false)
@@ -64,8 +63,7 @@ async function createWindow() {
           } else {
             overlay.setIgnoreMouseEvents(true)
             overlay.setFocusable(false)
-            windowState = overlay.getBounds()
-            storage.set('screenPosition', { windowState: windowState })
+            storage.set('screenPosition', { windowState: overlay.getBounds() })
           }
         }
       },
@@ -80,7 +78,8 @@ async function createWindow() {
     tray.setContextMenu(contextMenu)
     return contextMenu
   }
-  Createmenu('Preferences menu', 'Unpin overlay', 'Close')
+  createMenuOuter = createMenu
+  createMenu('Preferences menu', 'Unpin overlay', 'Close')
   service = new BrowserWindow({
     title: 'DiscordOverlayMac',
     icon: './src/assets/icon/favicon.png',
@@ -120,8 +119,7 @@ app.on('ready', async () => {
 })
 
 client.on('voiceStateUpdate', async (oldState, newState) => {
-  const member = newState.member
-  if (member?.user == client.user) {
+  if (newState?.user == client.user) {
     if (oldState.selfMute === true && newState.selfMute === false) {
       return
     }
@@ -173,7 +171,8 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
     } else {
       overlay?.close()
       contextMenu.items[1].enabled = false
-      // to do - pin the overlay if it's not pinned yet, not only disable it.
+      createMenuOuter('Preferences menu', 'Unpin overlay', 'Close')
+      storage.set('screenPosition', { windowState: overlay.getBounds() })
       return overlay = undefined
     }
   }
@@ -181,7 +180,9 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
 
 preferences.on('save', () => {
   const url = `https://streamkit.discord.com/overlay/voice/${serverId}/${channelId}?icon=true&online=true&logo=white&text_color=${preferences.preferences.Interface.txt_color.replace('#', '%23')}&text_size=${preferences.preferences.Interface.txt_size}&text_outline_color=${preferences.preferences.Interface.txt_outline_color.replace('#', '%23')}&text_outline_size=${preferences.preferences.Interface.txt_outline_size}&text_shadow_color=${preferences.preferences.Interface.txt_shadow_color.replace('#', '%23')}&text_shadow_size=${preferences.preferences.Interface.txt_shadow_size}&bg_color=${preferences.preferences.Interface.bg_color.replace('#', '%23')}&bg_opacity=${parseFloat(preferences.preferences.Interface.bg_opacity) / 100}&bg_shadow_color=${preferences.preferences.Interface.bg_shadow_color.replace('#', '%23')}&bg_shadow_size=${preferences.preferences.Interface.bg_shadow_size}&invite_code=&limit_speaking=${preferences.preferences.Interface.general.includes('users_only')}&small_avatars=${preferences.preferences.Interface.general.includes('small_avt')}&hide_names=${preferences.preferences.Interface.general.includes('hide_nick')}&fade_chat=0`.replaceAll('true', 'True')
-  overlay.loadURL(url)
+  if (overlay) {
+    overlay.loadURL(url)
+  }
 })
 
 storage.get('discordToken', function (error, object) {
@@ -199,6 +200,8 @@ storage.get('discordToken', function (error, object) {
       .then((r) => {
         if (r === null) {
           log('user cancelled', 'client')
+          log('Exited application with code 0', 'client')
+          app.quit()
         } else {
           storage.set('discordToken', { token: r })
           client.login(r)

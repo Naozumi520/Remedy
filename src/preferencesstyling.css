@@ -1,0 +1,19 @@
+.sidebar {
+    display: none;
+}
+
+.main {
+    width: 100%;
+    min-width: 800px;
+    max-width: 800px;
+    padding-right: 40px;
+    padding-left: 40px;
+}
+
+.group .field .bt {
+    background-color: rgb(107, 127, 235);
+}
+
+.group .field .bt:hover {
+    background-color: rgb(107, 127, 235, 0.5);
+}
