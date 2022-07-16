@@ -3,7 +3,7 @@ const path = require('path')
 const storage = require('electron-json-storage')
 const pie = require('puppeteer-in-electron')
 const puppeteer = require('puppeteer-core')
-let tray, page, initializer, overlay
+let tray, page, initializer, contextMenu, createMenuOuter, overlay
 let overlayUnpinned = false
 
 nativeTheme.themeSource = 'dark'
@@ -16,16 +16,16 @@ if (process.platform === 'darwin') {
   app.dock.hide()
 }
 
-function log (message, type) {
+function log(message, type) {
   message.split('\n').forEach(line => console.log(`Remedy Standard [${type || 'info'}]: ${line}`))
 };
 
-async function initialize () {
+async function initialize() {
   log(`Starting services\nVersion ${require('../package.json').version}`, 'client')
   await pie.initialize(app)
 }
 
-async function createWindow () {
+async function createWindow() {
   log('Creating window...', 'client')
   storage.get('screenPosition', function (error, object) {
     if (object.windowState) {
@@ -33,8 +33,8 @@ async function createWindow () {
       windowState = object.windowState
     }
   })
-  function Createmenu (tab1, tab2, tab3) {
-    const contextMenu = Menu.buildFromTemplate([
+  function createMenu(tab1, tab2, tab3) {
+    contextMenu = Menu.buildFromTemplate([
       {
         label: tab1,
         click: async function () {
@@ -47,8 +47,10 @@ async function createWindow () {
       },
       {
         label: tab2,
+        enabled: false,
         click: async function () {
-          Createmenu('Show', !overlayUnpinned ? 'Pin overlay' : 'Unpin overlay', 'Close')
+          createMenu('Show', !overlayUnpinned ? 'Pin overlay' : 'Unpin overlay', 'Close')
+          contextMenu.items[1].enabled = true
           overlayUnpinned = !overlayUnpinned
           if (overlayUnpinned) {
             overlay.setIgnoreMouseEvents(false)
@@ -71,7 +73,8 @@ async function createWindow () {
     ])
     tray.setContextMenu(contextMenu)
   }
-  Createmenu('Show', 'Unpin overlay', 'Close')
+  createMenuOuter = createMenu
+  createMenu('Show', 'Unpin overlay', 'Close')
   const size = screen.getPrimaryDisplay().workAreaSize
   initializer = new BrowserWindow({
     title: 'DiscordOverlayMac',
@@ -140,8 +143,11 @@ async function createWindow () {
             pointer-events: none;
           }
         `)
+        contextMenu.items[1].enabled = true
         await page.waitForSelector('#app-mount > div > div > div.install.is-open > div.config-link > div:nth-child(3) > input', { hidden: true, timeout: 0 })
         overlay.close()
+        contextMenu.items[1].enabled = false
+        createMenuOuter('Preferences menu', 'Unpin overlay', 'Close')
         initializer.close()
         console.log('Overlay closed.')
         return overlay = undefined
