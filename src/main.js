@@ -132,6 +132,30 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
     if (oldState.selfDeaf === false && newState.selfDeaf === true) {
       return
     }
+    if (oldState.serverMute === true && newState.serverMute === false) {
+      return
+    }
+    if (oldState.serverMute === false && newState.serverMute === true) {
+      return
+    }
+    if (oldState.serverDeaf === true && newState.serverDeaf === false) {
+      return
+    }
+    if (oldState.serverDeaf === false && newState.serverDeaf === true) {
+      return
+    }
+    if (oldState.selfVideo === true && newState.selfVideo === false) {
+      return
+    }
+    if (oldState.selfVideo === false && newState.selfVideo === true) {
+      return
+    }
+    if (oldState.streaming === true && newState.streaming === false) {
+      return
+    }
+    if (oldState.streaming === false && newState.streaming === true) {
+      return
+    }
     if (newState.channelId !== oldState.channelId && !oldState.channelId) {
       serverId = newState.guild.id
       channelId = newState.channelId
