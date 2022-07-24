@@ -175,7 +175,7 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
         overlay.setIgnoreMouseEvents(true)
         overlay.setFocusable(false)
         overlay.webContents.setZoomFactor(90)
-        overlay.webContents.executeJavaScript(fs.readFileSync('src/overlayScript.js'))
+        overlay.webContents.executeJavaScript(fs.readFileSync(path.join(__dirname, '/overlayScript.js')))
         const url = `https://streamkit.discord.com/overlay/voice/${serverId}/${channelId}?icon=true&online=true&logo=white&text_color=${preferences.preferences.Interface.txt_color.replace('#', '%23')}&text_size=${preferences.preferences.Interface.txt_size}&text_outline_color=${preferences.preferences.Interface.txt_outline_color.replace('#', '%23')}&text_outline_size=${preferences.preferences.Interface.txt_outline_size}&text_shadow_color=${preferences.preferences.Interface.txt_shadow_color.replace('#', '%23')}&text_shadow_size=${preferences.preferences.Interface.txt_shadow_size}&bg_color=${preferences.preferences.Interface.bg_color.replace('#', '%23')}&bg_opacity=${parseFloat(preferences.preferences.Interface.bg_opacity) / 100}&bg_shadow_color=${preferences.preferences.Interface.bg_shadow_color.replace('#', '%23')}&bg_shadow_size=${preferences.preferences.Interface.bg_shadow_size}&invite_code=&limit_speaking=${preferences.preferences.Interface.general.includes('users_only')}&small_avatars=${preferences.preferences.Interface.general.includes('small_avt')}&hide_names=${preferences.preferences.Interface.general.includes('hide_nick')}&fade_chat=0`
         overlay.loadURL(url.replaceAll('true', 'True'))
         log('Overlay loaded:', 'voiceStateUpdate')
