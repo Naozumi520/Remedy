@@ -24,7 +24,7 @@ Remedy comes in two editions, Standard and Pro. This app was made using the Disc
 | Show the mute/deafen status                              | :white_check_mark: | :white_check_mark: |
 | Detect which VC your in and create overlay automatically | :x:                | :white_check_mark: |
 | Group calls/ DM calls                                    | :x:                | :white_check_mark: |
-| Show the stream icon when someone is streaming           | :x:                | WIP                |
+| 'Live' icon when someone is streaming                    | :x:                | :white_check_mark: |
 | Show an eye when someone is watching your stream         | :x:                | :x:                |
 
 ## Usage

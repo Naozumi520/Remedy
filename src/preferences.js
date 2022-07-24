@@ -15,7 +15,8 @@ const defaultSettings = {
     bg_color: '#1e2124',
     bg_shadow_color: '#000000',
     bg_shadow_size: '0',
-    bg_opacity: '95'
+    bg_opacity: '95',
+    dm_sync: []
   }
 }
 
@@ -138,6 +139,18 @@ const preferences = new ElectronPreferences({
                 options: [
                   { label: 'Background Shadow Size' }
                 ]
+              },
+              {
+                label: 'DMSync',
+                key: 'dm_sync',
+                type: 'checkbox',
+                options: [
+                  {
+                    label: 'DMSync (Restart to Apply)',
+                    value: 'dm_sync'
+                  }
+                ],
+                help: 'DMSync will sync voice event. Enable only if you have many dms channel or remedy didn\'t detect channels, May cause rate limit to gateway.'
               },
               {
                 label: 'Reset',

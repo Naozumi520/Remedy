@@ -1,11 +1,14 @@
+const { preferences } = require('./preferences.js')
 const { Client } = require('discord.js-selfbot-v13')
-const client = new Client()
-const { app, BrowserWindow, Menu, Tray, nativeTheme, nativeImage } = require('electron')
+const client = new Client({
+  DMSync: preferences.preferences.Interface.dm_sync.includes('dm_sync')
+})
+const { app, BrowserWindow, ipcMain, Menu, Tray, nativeTheme, nativeImage } = require('electron')
+const fs = require('fs')
 const path = require('path')
 const storage = require('electron-json-storage')
 const pie = require('puppeteer-in-electron')
 const puppeteer = require('puppeteer-core')
-const { preferences } = require('./preferences.js')
 let tray, page, service, overlay, contextMenu, createMenuOuter, serverId, channelId
 let overlayUnpinned = false
 
@@ -119,47 +122,35 @@ app.on('ready', async () => {
 })
 
 client.on('voiceStateUpdate', async (oldState, newState) => {
+  if (oldState.streaming === false && newState.streaming === true) {
+    // log((!newState.member?.nickname ? newState.user.username : newState.member?.nickname) + ' started streaming!')
+    if (overlay) {
+      overlay.webContents.send('event', { action: 'stream:start', args: { user: (!newState.member?.nickname ? newState.user.username : newState.member?.nickname), userId: (!newState.member?.id ? newState.user.id : newState.member?.id) } })
+    }
+  }
+  if (oldState.streaming === true && newState.streaming === false) {
+    // log((!oldState.member?.nickname ? oldState.user.username : oldState.member?.nickname) + ' stopped streaming!')
+    if (overlay) {
+      overlay.webContents.send('event', { action: 'stream:stop', args: { user: (!newState.member?.nickname ? newState.user.username : newState.member?.nickname), userId: (!newState.member?.id ? newState.user.id : newState.member?.id) } })
+    }
+  }
   if (newState?.user == client.user) {
-    if (oldState.selfMute === true && newState.selfMute === false) {
-      return
-    }
-    if (oldState.selfMute === false && newState.selfMute === true) {
-      return
-    }
-    if (oldState.selfDeaf === true && newState.selfDeaf === false) {
-      return
-    }
-    if (oldState.selfDeaf === false && newState.selfDeaf === true) {
-      return
-    }
-    if (oldState.serverMute === true && newState.serverMute === false) {
-      return
-    }
-    if (oldState.serverMute === false && newState.serverMute === true) {
-      return
-    }
-    if (oldState.serverDeaf === true && newState.serverDeaf === false) {
-      return
-    }
-    if (oldState.serverDeaf === false && newState.serverDeaf === true) {
-      return
-    }
-    if (oldState.selfVideo === true && newState.selfVideo === false) {
-      return
-    }
-    if (oldState.selfVideo === false && newState.selfVideo === true) {
-      return
-    }
-    if (oldState.streaming === true && newState.streaming === false) {
-      return
-    }
-    if (oldState.streaming === false && newState.streaming === true) {
-      return
-    }
+    if (oldState.selfMute === true && newState.selfMute === false) return
+    if (oldState.selfMute === false && newState.selfMute === true) return
+    if (oldState.selfDeaf === true && newState.selfDeaf === false) return
+    if (oldState.selfDeaf === false && newState.selfDeaf === true) return
+    if (oldState.serverMute === true && newState.serverMute === false) return
+    if (oldState.serverMute === false && newState.serverMute === true) return
+    if (oldState.serverDeaf === true && newState.serverDeaf === false) return
+    if (oldState.serverDeaf === false && newState.serverDeaf === true) return
+    if (oldState.selfVideo === true && newState.selfVideo === false) return
+    if (oldState.selfVideo === false && newState.selfVideo === true) return
+    if (oldState.streaming === true && newState.streaming === false) return
+    if (oldState.streaming === false && newState.streaming === true) return
     if (newState.channelId !== oldState.channelId && !oldState.channelId) {
       serverId = newState.guild.id
       channelId = newState.channelId
-      log(`User joined voice channel:\nServer ID: ${serverId}\nChannel ID: ${channelId}`, 'voiceStateUpdate')
+      // log(`User joined voice channel:\nServer ID: ${serverId}\nChannel ID: ${channelId}`, 'voiceStateUpdate')
       if (!overlay) {
         overlay = new BrowserWindow({
           title: 'Remedy Overlay Component',
@@ -167,11 +158,15 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
           x: 0,
           y: 0,
           frame: false,
+          hasShadow: false,
           resizable: false,
           fullscreenable: false,
           transparent: true,
           webPreferences: {
-            zoomFactor: 0.85
+            nodeIntegration: true,
+            contextIsolation: false,
+            zoomFactor: 0.85,
+            devTools: false
           }
         })
         overlay.setBounds(windowState)
@@ -180,9 +175,11 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
         overlay.setIgnoreMouseEvents(true)
         overlay.setFocusable(false)
         overlay.webContents.setZoomFactor(90)
-        overlay.webContents.executeJavaScript('if (typeof console.oldlog === \'undefined\') { console.oldlog = console.log; } window.consoleCatchers = []; console.log = function (text, input) { if (typeof input !== \'undefined\') { window.consoleCatchers.forEach(function (item, index) { item(input) }) } else { console.oldlog(text); } }; window.consoleCatchers.push(function (input) { if (input.evt == \'VOICE_STATE_UPDATE\') { name = input.data.nick; uState = input.data.voice_state; muteicon = \'\'; if (uState.self_mute || uState.mute) { muteicon = "<img src=\'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAABhMAAAYJQE8CCw1AAAAB3RJTUUH5AUGCx0VMm5EjgAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAABzSURBVDjLxZIxCsAwCEW/oT1P7z93zZJjeIYMv0sCIaBoodTJDz6/JgJfBslOsns1xYONvK66JCeqAC4ALTz+dJvOo0lu/zS87p2C98IdHlq9Buo5D62h17amScMk78hBWXB/DUdP2fyBaINjJiJy4o94AM8J8ksz/MQjAAAAAElFTkSuQmCC\' style=\'height:0.9em;padding-left:3px;transform: translateY(1px);\'>"; } deaficon = \'\'; if (uState.self_deaf || uState.deaf) { deaficon = "<img src=\'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAABhMAAAYJQE8CCw1AAAAB3RJTUUH5AUGCx077rhJQQAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAACNSURBVDjLtZPNCcAgDIUboSs4iXTGLuI2XjpBz87g4fWiENr8iNBAQPR9ef7EbfsjAEQAN4A2UtCcGtyMzFxjwVlyBHAwTRFh52gqHDVnF+6L1XJ/w31cp7YvOX/0xlOJ254qYJ1ZLTAmPWeuDVxARDurfBFR8jovMLEKWxG6c1qB55pEuQOpE8vKz30AhEdNuXK0IugAAAAASUVORK5CYII=\' style=\'height:0.9em;padding-left:3px;transform: translateY(1px);\'>"; } spans = document.getElementsByTagName(\'span\'); for (i = 0; i < spans.length; i++) { if (spans[i].innerHTML.startsWith(name)) { text = name + muteicon + deaficon; spans[i].innerHTML = text; } } } });')
+        overlay.webContents.executeJavaScript(fs.readFileSync('src/overlayScript.js'))
         const url = `https://streamkit.discord.com/overlay/voice/${serverId}/${channelId}?icon=true&online=true&logo=white&text_color=${preferences.preferences.Interface.txt_color.replace('#', '%23')}&text_size=${preferences.preferences.Interface.txt_size}&text_outline_color=${preferences.preferences.Interface.txt_outline_color.replace('#', '%23')}&text_outline_size=${preferences.preferences.Interface.txt_outline_size}&text_shadow_color=${preferences.preferences.Interface.txt_shadow_color.replace('#', '%23')}&text_shadow_size=${preferences.preferences.Interface.txt_shadow_size}&bg_color=${preferences.preferences.Interface.bg_color.replace('#', '%23')}&bg_opacity=${parseFloat(preferences.preferences.Interface.bg_opacity) / 100}&bg_shadow_color=${preferences.preferences.Interface.bg_shadow_color.replace('#', '%23')}&bg_shadow_size=${preferences.preferences.Interface.bg_shadow_size}&invite_code=&limit_speaking=${preferences.preferences.Interface.general.includes('users_only')}&small_avatars=${preferences.preferences.Interface.general.includes('small_avt')}&hide_names=${preferences.preferences.Interface.general.includes('hide_nick')}&fade_chat=0`
         overlay.loadURL(url.replaceAll('true', 'True'))
+        log('Overlay loaded:', 'voiceStateUpdate')
+        log(url, 'voiceStateUpdate')
         await overlay.webContents.insertCSS(`
           * {
             -webkit-app-region: drag;
@@ -193,19 +190,25 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
         contextMenu.items[1].enabled = true
       }
     } else {
-      overlay?.close()
-      contextMenu.items[1].enabled = false
-      createMenuOuter('Preferences menu', 'Unpin overlay', 'Close')
-      storage.set('screenPosition', { windowState: overlay.getBounds() })
+      try {
+        contextMenu.items[1].enabled = false
+        createMenuOuter('Preferences menu', 'Unpin overlay', 'Close')
+        const bounds = overlay.getBounds()
+        storage.set('screenPosition', { windowState: bounds })
+        overlay?.close()
+      } catch (e) {
+        // log(e, 'voiceStateUpdate')
+      }
       return overlay = undefined
     }
   }
 })
 
 preferences.on('save', () => {
-  const url = `https://streamkit.discord.com/overlay/voice/${serverId}/${channelId}?icon=true&online=true&logo=white&text_color=${preferences.preferences.Interface.txt_color.replace('#', '%23')}&text_size=${preferences.preferences.Interface.txt_size}&text_outline_color=${preferences.preferences.Interface.txt_outline_color.replace('#', '%23')}&text_outline_size=${preferences.preferences.Interface.txt_outline_size}&text_shadow_color=${preferences.preferences.Interface.txt_shadow_color.replace('#', '%23')}&text_shadow_size=${preferences.preferences.Interface.txt_shadow_size}&bg_color=${preferences.preferences.Interface.bg_color.replace('#', '%23')}&bg_opacity=${parseFloat(preferences.preferences.Interface.bg_opacity) / 100}&bg_shadow_color=${preferences.preferences.Interface.bg_shadow_color.replace('#', '%23')}&bg_shadow_size=${preferences.preferences.Interface.bg_shadow_size}&invite_code=&limit_speaking=${preferences.preferences.Interface.general.includes('users_only')}&small_avatars=${preferences.preferences.Interface.general.includes('small_avt')}&hide_names=${preferences.preferences.Interface.general.includes('hide_nick')}&fade_chat=0`.replaceAll('true', 'True')
   if (overlay) {
+    const url = `https://streamkit.discord.com/overlay/voice/${serverId}/${channelId}?icon=true&online=true&logo=white&text_color=${preferences.preferences.Interface.txt_color.replace('#', '%23')}&text_size=${preferences.preferences.Interface.txt_size}&text_outline_color=${preferences.preferences.Interface.txt_outline_color.replace('#', '%23')}&text_outline_size=${preferences.preferences.Interface.txt_outline_size}&text_shadow_color=${preferences.preferences.Interface.txt_shadow_color.replace('#', '%23')}&text_shadow_size=${preferences.preferences.Interface.txt_shadow_size}&bg_color=${preferences.preferences.Interface.bg_color.replace('#', '%23')}&bg_opacity=${parseFloat(preferences.preferences.Interface.bg_opacity) / 100}&bg_shadow_color=${preferences.preferences.Interface.bg_shadow_color.replace('#', '%23')}&bg_shadow_size=${preferences.preferences.Interface.bg_shadow_size}&invite_code=&limit_speaking=${preferences.preferences.Interface.general.includes('users_only')}&small_avatars=${preferences.preferences.Interface.general.includes('small_avt')}&hide_names=${preferences.preferences.Interface.general.includes('hide_nick')}&fade_chat=0`.replaceAll('true', 'True')
     overlay.loadURL(url)
+    overlay.webContents.executeJavaScript(fs.readFileSync('src/overlayScript.js'))
   }
 })
 
