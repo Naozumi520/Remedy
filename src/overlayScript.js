@@ -18,7 +18,7 @@ liveicon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 27.02 12.01">
         svg {
             height: 1.4em;
             padding-left: 3px;
-            transform: translateY(4px);
+            transform: translateY(4.5px);
         }
     </style>
 </svg>`

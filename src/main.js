@@ -131,7 +131,7 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
   if (oldState.streaming === true && newState.streaming === false) {
     // log((!oldState.member?.nickname ? oldState.user.username : oldState.member?.nickname) + ' stopped streaming!')
     if (overlay) {
-      overlay.webContents.send('event', { action: 'stream:stop', args: { user: (!newState.member?.nickname ? newState.user.username : newState.member?.nickname), userId: (!newState.member?.id ? newState.user.id : newState.member?.id) } })
+      overlay.webContents.send('event', { action: 'stream:stop', args: { user: (!oldState.member?.nickname ? oldState.user.username : oldState.member?.nickname), userId: (!oldState.member?.id ? oldState.user.id : oldState.member?.id) } })
     }
   }
   if (newState?.user == client.user) {
@@ -181,7 +181,7 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
         log('Overlay loaded:', 'voiceStateUpdate')
         log(url, 'voiceStateUpdate')
         await overlay.webContents.insertCSS(`
-          * {
+          .voice-container {
             -webkit-app-region: drag;
             user-select: none;
             pointer-events: none;
