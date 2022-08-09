@@ -13,7 +13,9 @@ let tray, page, service, overlay, contextMenu, createMenuOuter, serverId, channe
 let overlayUnpinned = false
 
 nativeTheme.themeSource = 'dark'
-app.dock.hide()
+if (process.platform === 'darwin') {
+  app.dock.hide()
+}
 
 let windowState = {
   x: 0,
@@ -217,23 +219,58 @@ storage.get('discordToken', function (error, object) {
   if (object.token) {
     client.login(object.token)
   } else {
-    const prompt = require('custom-electron-prompt')
-    prompt({
-      title: 'Discord Token not found',
-      label: 'Please input your Discord token:',
-      value: '',
-      type: 'input'
+    const prompt = new BrowserWindow({
+      title: 'Remedy login prompt',
+      titleBarStyle: 'hidden',
+      width: 400,
+      height: 500,
+      center: true,
+      resizable: false,
+      fullscreenable: false,
+      acceptFirstMouse: true,
+      show: false,
+      webPreferences: {
+        nodeIntegration: true,
+        contextIsolation: false,
+        zoomFactor: 0.85,
+        // devTools: false
+      }
     })
-      .then((r) => {
-        if (r === null) {
-          log('user cancelled', 'client')
-          log('Exited application with code 0', 'client')
-          app.quit()
-        } else {
-          storage.set('discordToken', { token: r })
-          client.login(r)
-        }
-      })
-      .catch(console.error)
+    prompt.webContents.loadFile(path.join(__dirname, '/prompt/loginPrompt.html'))
+    const RemoteAuth = client.QRLogin();
+    RemoteAuth.on('ready', (url) => {
+      prompt.webContents.send('event', { action: 'qrRen', args: { qrCodeUrl: url } })
+      prompt.show()
+    })
+      .on('success', (_, token) => {
+        storage.set('discordToken', { token: token })
+        prompt.destroy()
+      });
+    ipcMain.once('login_m_token', (_, msg) => {
+      try {
+        prompt.destroy()
+        RemoteAuth.destroy()
+      } catch (e) {
+      } finally {
+        const prompt = require('custom-electron-prompt')
+        prompt({
+          title: 'Login with Discord Token',
+          label: 'Please input your Discord token:',
+          value: '',
+          type: 'input'
+        })
+          .then((r) => {
+            if (r === null) {
+              log('user cancelled', 'client')
+              log('Exited application with code 0', 'client')
+              app.quit()
+            } else {
+              storage.set('discordToken', { token: r })
+              client.login(r)
+            }
+          })
+          .catch(console.error)
+      }
+    })
   }
 })
