@@ -164,7 +164,7 @@ const preferences = new ElectronPreferences({
                 key: 'reset_whole_app',
                 type: 'button',
                 buttonLabel: 'Reset! The! Whole! App!',
-                help: 'Resetting the entire application will roll the program back to its default state.'
+                help: 'Resetting the entire application will roll the program back to its default state. (Will also log you out.)'
               }
             ]
           }

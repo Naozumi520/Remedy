@@ -9,7 +9,7 @@ const path = require('path')
 const storage = require('electron-json-storage')
 const pie = require('puppeteer-in-electron')
 const puppeteer = require('puppeteer-core')
-let tray, page, service, overlay, contextMenu, createMenuOuter, serverId, channelId
+let tray, page, bg_service, overlay, contextMenu, createMenuOuter, serverId, channelId
 let overlayUnpinned = false
 
 nativeTheme.themeSource = 'dark'
@@ -85,8 +85,8 @@ async function createWindow() {
   }
   createMenuOuter = createMenu
   createMenu('Preferences menu', 'Unpin overlay', 'Close')
-  service = new BrowserWindow({
-    title: 'DiscordOverlayMac',
+  bg_service = new BrowserWindow({
+    title: 'Remedy Pro Service (Discord StreamKit Overlay)',
     icon: './src/assets/icon/favicon.png',
     width: 0,
     height: 0,
@@ -99,9 +99,9 @@ async function createWindow() {
     },
     show: false
   })
-  service.loadURL('https://streamkit.discord.com/overlay')
+  bg_service.loadURL('https://streamkit.discord.com/overlay')
   const browser = await pie.connect(app, puppeteer)
-  page = await pie.getPage(browser, service)
+  page = await pie.getPage(browser, bg_service)
   await page.goto('https://streamkit.discord.com/overlay')
   await page.waitForSelector('.install-button button', { timeout: 0 })
   await page.evaluate(function (selector) {
