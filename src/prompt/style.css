@@ -5,6 +5,7 @@ html {
 body {
     margin: 0;
     background-color: rgb(98, 159, 249);
+    overflow: hidden;
 }
 
 .dragArea {
@@ -34,8 +35,18 @@ body {
 }
 
 .loginTXT {
+    display: block;
     font-size: 24px;
     margin-top: 5em;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.remedyIcon {
+    margin-right: 4px;
+    position: relative;
+    top: 6px;
 }
 
 .loginTXT_token {
@@ -57,4 +68,19 @@ a {
     bottom: 50%;
     user-select: none;
     pointer-events: none;
+    animation-name: appear_QR;
+    animation-duration: 1.25s;
+    animation-timing-function: ease-in-out;
+}
+
+@keyframes appear_QR {
+    from {
+        opacity: 0;
+        transform: scale(1.5);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
 }
