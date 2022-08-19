@@ -9,7 +9,7 @@ const path = require('path')
 const storage = require('electron-json-storage')
 const pie = require('puppeteer-in-electron')
 const puppeteer = require('puppeteer-core')
-let tray, page, bg_service, overlay, contextMenu, createMenuOuter, serverId, channelId
+let tray, page, bg_service, overlay, contextMenu, serverId, channelId
 let overlayUnpinned = false
 
 nativeTheme.themeSource = 'dark'
@@ -35,6 +35,47 @@ async function initialize() {
   await pie.initialize(app)
 }
 
+function createMenu(tab1, tab2, tab3) {
+  contextMenu = Menu.buildFromTemplate([
+    {
+      label: tab1,
+      click: function () {
+        try {
+          preferences.prefsWindow.show()
+        } catch (e) {
+          preferences.show()
+        }
+      }
+    },
+    {
+      label: tab2,
+      enabled: false,
+      click: async function () {
+        createMenu('Preferences menu', !overlayUnpinned ? 'Pin overlay' : 'Unpin overlay', 'Close')
+        contextMenu.items[1].enabled = true
+        overlayUnpinned = !overlayUnpinned
+        if (overlayUnpinned) {
+          overlay.setIgnoreMouseEvents(false)
+          overlay.setFocusable(true)
+        } else {
+          overlay.setIgnoreMouseEvents(true)
+          overlay.setFocusable(false)
+          storage.set('screenPosition', { windowState: overlay.getBounds() })
+        }
+      }
+    },
+    {
+      label: tab3,
+      click: function () {
+        log('Exited application with code 0')
+        return app.quit()
+      }
+    }
+  ])
+  tray.setContextMenu(contextMenu)
+  return contextMenu
+}
+
 async function createWindow() {
   log('Creating window...', 'client')
   storage.get('screenPosition', function (error, object) {
@@ -43,47 +84,6 @@ async function createWindow() {
       windowState = object.windowState
     }
   })
-  function createMenu(tab1, tab2, tab3) {
-    contextMenu = Menu.buildFromTemplate([
-      {
-        label: tab1,
-        click: function () {
-          try {
-            preferences.prefsWindow.show()
-          } catch (e) {
-            preferences.show()
-          }
-        }
-      },
-      {
-        label: tab2,
-        enabled: false,
-        click: async function () {
-          createMenu('Preferences menu', !overlayUnpinned ? 'Pin overlay' : 'Unpin overlay', 'Close')
-          contextMenu.items[1].enabled = true
-          overlayUnpinned = !overlayUnpinned
-          if (overlayUnpinned) {
-            overlay.setIgnoreMouseEvents(false)
-            overlay.setFocusable(true)
-          } else {
-            overlay.setIgnoreMouseEvents(true)
-            overlay.setFocusable(false)
-            storage.set('screenPosition', { windowState: overlay.getBounds() })
-          }
-        }
-      },
-      {
-        label: tab3,
-        click: function () {
-          log('Exited application with code 0')
-          return app.quit()
-        }
-      }
-    ])
-    tray.setContextMenu(contextMenu)
-    return contextMenu
-  }
-  createMenuOuter = createMenu
   createMenu('Preferences menu', 'Unpin overlay', 'Close')
   bg_service = new BrowserWindow({
     title: 'Remedy Pro Service (Discord StreamKit Overlay)',
@@ -115,7 +115,7 @@ async function createWindow() {
 initialize()
 
 app.on('ready', async () => {
-  const trayIcon = nativeImage.createFromPath(path.join(__dirname, '/icon/favicon.png')).resize({
+  const trayIcon = nativeImage.createFromPath(path.join(__dirname, '/icon/favicon_menu.png')).resize({
     width: 18,
     height: 18
   })
@@ -194,7 +194,7 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
     } else {
       try {
         contextMenu.items[1].enabled = false
-        createMenuOuter('Preferences menu', 'Unpin overlay', 'Close')
+        createMenu('Preferences menu', 'Unpin overlay', 'Close')
         const bounds = overlay.getBounds()
         storage.set('screenPosition', { windowState: bounds })
         overlay?.close()
