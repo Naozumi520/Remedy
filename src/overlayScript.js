@@ -45,6 +45,9 @@ console.log = function (text, input) {
                 }
                 if (streamingUsr.includes(id)) {
                     text += liveicon
+                    spans[i].parentElement.style.paddingTop = '13px'
+                } else {
+                    spans[i].parentElement.style.paddingTop = '18px'
                 }
                 spans[i].innerHTML = text;
             }
@@ -75,6 +78,9 @@ ipcRenderer.on('event', (_, msg) => {
             }
             if (streamingUsr.includes(args.userId)) {
                 text += liveicon
+                spans[i].parentElement.style.paddingTop = '13px'
+            } else {
+                spans[i].parentElement.style.paddingTop = '18px'
             }
             spans[i].innerHTML = text;
         }
