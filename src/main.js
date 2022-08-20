@@ -233,6 +233,9 @@ function loginSetup() {
     }
   })
   prompt.webContents.loadFile(path.join(__dirname, '/prompt/loginPrompt.html'))
+  prompt.on('close', () => {
+    app.quit()
+  })
   const RemoteAuth = client.QRLogin();
   RemoteAuth.on('ready', (url) => {
     prompt.webContents.send('event', { action: 'qrRen', args: { qrCodeUrl: url } })
