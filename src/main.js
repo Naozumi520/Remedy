@@ -1,5 +1,5 @@
 const { preferences } = require('./preferences.js')
-const { Client } = require('discord.js-selfbot-v13')
+const { Client, DiscordAuthWebsocket } = require('discord.js-selfbot-v13')
 const client = new Client({
   DMSync: preferences.preferences.Interface.dm_sync.includes('dm_sync')
 })
@@ -9,7 +9,7 @@ const path = require('path')
 const storage = require('electron-json-storage')
 const pie = require('puppeteer-in-electron')
 const puppeteer = require('puppeteer-core')
-let tray, page, bg_service, overlay, contextMenu, serverId, channelId
+let tray, page, backService, overlay, contextMenu, serverId, channelId
 let overlayUnpinned = false
 
 nativeTheme.themeSource = 'dark'
@@ -22,7 +22,7 @@ let windowState = {
   y: 0
 }
 
-function log(message, type) {
+function log (message, type) {
   message.split('\n').forEach(line => console.log(`Remedy Pro [${type || 'info'}]: ${line}`))
 };
 
@@ -30,12 +30,12 @@ client.on('ready', async () => {
   log(`logged in with account ${client.user.username}.`)
 })
 
-async function initialize() {
+async function initialize () {
   log(`Starting services\nVersion ${require('../package.json').version}`, 'client')
   await pie.initialize(app)
 }
 
-function createMenu(tab1, tab2, tab3) {
+function createMenu (tab1, tab2, tab3) {
   contextMenu = Menu.buildFromTemplate([
     {
       label: tab1,
@@ -76,16 +76,16 @@ function createMenu(tab1, tab2, tab3) {
   return contextMenu
 }
 
-async function createWindow() {
+async function createWindow () {
   log('Creating window...', 'client')
-  storage.get('screenPosition', function (error, object) {
+  storage.get('screenPosition', function (_, object) {
     if (object.windowState) {
       log('Restoring overlay position...', 'client')
       windowState = object.windowState
     }
   })
   createMenu('Preferences menu', 'Unpin overlay', 'Close')
-  bg_service = new BrowserWindow({
+  backService = new BrowserWindow({
     title: 'Remedy Pro Service (Discord StreamKit Overlay)',
     icon: './src/assets/icon/favicon.png',
     width: 0,
@@ -99,9 +99,9 @@ async function createWindow() {
     },
     show: false
   })
-  bg_service.loadURL('https://streamkit.discord.com/overlay')
+  backService.loadURL('https://streamkit.discord.com/overlay')
   const browser = await pie.connect(app, puppeteer)
-  page = await pie.getPage(browser, bg_service)
+  page = await pie.getPage(browser, backService)
   await page.goto('https://streamkit.discord.com/overlay')
   await page.waitForSelector('.install-button button', { timeout: 0 })
   await page.evaluate(function (selector) {
@@ -136,7 +136,7 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
       overlay.webContents.send('event', { action: 'stream:stop', args: { user: (!oldState.member?.nickname ? oldState.user.username : oldState.member?.nickname), userId: (!oldState.member?.id ? oldState.user.id : oldState.member?.id) } })
     }
   }
-  if (newState?.user == client.user) {
+  if (newState?.user === client.user) {
     if (oldState.selfMute === true && newState.selfMute === false) return
     if (oldState.selfMute === false && newState.selfMute === true) return
     if (oldState.selfDeaf === true && newState.selfDeaf === false) return
@@ -201,7 +201,7 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
       } catch (e) {
         // log(e, 'voiceStateUpdate')
       }
-      return overlay = undefined
+      overlay = undefined
     }
   }
 })
@@ -214,7 +214,7 @@ preferences.on('save', () => {
   }
 })
 
-function loginSetup() {
+function loginSetup () {
   const prompt = new BrowserWindow({
     title: 'Remedy login prompt',
     titleBarStyle: 'hidden',
@@ -229,26 +229,30 @@ function loginSetup() {
       nodeIntegration: true,
       contextIsolation: false,
       zoomFactor: 0.85,
-      // devTools: false
+      devTools: false
     }
   })
   prompt.webContents.loadFile(path.join(__dirname, '/prompt/loginPrompt.html'))
   prompt.on('close', () => {
     app.quit()
   })
-  const RemoteAuth = client.QRLogin();
-  RemoteAuth.on('ready', (url) => {
+  const AuthWebsocket = new DiscordAuthWebsocket()
+  AuthWebsocket.connect()
+  AuthWebsocket.on('ready', (_, url) => {
     prompt.webContents.send('event', { action: 'qrRen', args: { qrCodeUrl: url } })
     prompt.show()
   })
-    .on('success', (_, token) => {
+    .on('finish', (_, token) => {
       storage.set('discordToken', { token: token })
       prompt.destroy()
-    });
+      client.login(token).catch(e => {
+        loginSetup()
+      })
+    })
   ipcMain.once('login_m_token', (_, msg) => {
     try {
       prompt.destroy()
-      RemoteAuth.destroy()
+      AuthWebsocket.destroy()
     } catch (e) {
     } finally {
       const prompt = require('custom-electron-prompt')
