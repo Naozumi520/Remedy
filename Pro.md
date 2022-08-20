@@ -22,10 +22,19 @@ Download the .dmg from [release page](https://github.com/Naozumi520/Remedy/relea
 
 Double click "Remedy Standard" from your application list to open it. For some reasons this app is not signed yet. If you're not able to open the app, follow [this](https://support.apple.com/en-hk/guide/mac-help/mh40616/mac). If remedy run properly, you should able to see the Remedy icon appear in the menu bar.  
 
-## 3. Input your Discord Token  
+## 3. Log in to Remedy
+Currently there are two ways to let you log in to remedy: QR Code and user token.
+### QRcode: 
+<p align="center">
+  <img style='height: 50%; width: 50%; object-fit: contain' src="src/image/qr_step.png" />
+</p>
+Open the discord app on your phone, go to the user page, press "Scan QR Code" button and scan the QR code provided by the remedy prompt.
+
+### Token:
 <p align="center">
   <img style='height: 50%; width: 50%; object-fit: contain' src="src/image/token.png" />
 </p>
+Click "login with user token" in the bottom left corner then enter your user token in the prompt that pops up.  
 
 To get your token, you can refer to [this document](https://github.com/aiko-chan-ai/discord.js-selfbot-v13#get-token-).  
 
