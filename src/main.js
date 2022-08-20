@@ -120,6 +120,7 @@ app.on('ready', async () => {
     width: 18,
     height: 18
   })
+  trayIcon.setTemplateImage(true)
   tray = new Tray(trayIcon)
   createWindow()
 })
