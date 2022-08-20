@@ -78,7 +78,8 @@ function createMenu (tab1, tab2, tab3) {
 
 async function createWindow () {
   log('Creating window...', 'client')
-  storage.get('screenPosition', function (_, object) {
+  storage.get('screenPosition', function (error, object) {
+    if (error) throw error
     if (object.windowState) {
       log('Restoring overlay position...', 'client')
       windowState = object.windowState
