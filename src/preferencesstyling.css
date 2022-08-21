@@ -10,6 +10,10 @@
     padding-left: 40px;
 }
 
+.group {
+    zoom: 0.9;
+}
+
 .group .field .bt {
     background-color: rgb(107, 127, 235);
 }

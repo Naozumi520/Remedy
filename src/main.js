@@ -54,14 +54,9 @@ function createMenu (tab1, tab2, tab3) {
         createMenu('Preferences menu', !overlayUnpinned ? 'Pin overlay' : 'Unpin overlay', 'Close')
         contextMenu.items[1].enabled = true
         overlayUnpinned = !overlayUnpinned
-        if (overlayUnpinned) {
-          overlay.setIgnoreMouseEvents(false)
-          overlay.setFocusable(true)
-        } else {
-          overlay.setIgnoreMouseEvents(true)
-          overlay.setFocusable(false)
-          storage.set('screenPosition', { windowState: overlay.getBounds() })
-        }
+        overlay.setIgnoreMouseEvents(!overlayUnpinned)
+        overlay.setFocusable(overlayUnpinned)
+        storage.set('screenPosition', { windowState: overlay.getBounds() })
       }
     },
     {
@@ -117,8 +112,8 @@ initialize()
 
 app.on('ready', async () => {
   const trayIcon = nativeImage.createFromPath(path.join(__dirname, '/icon/favicon_menu.png')).resize({
-    width: 18,
-    height: 18
+    width: 16,
+    height: 16
   })
   trayIcon.setTemplateImage(true)
   tray = new Tray(trayIcon)
