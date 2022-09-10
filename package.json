@@ -14,6 +14,13 @@
       "asar": true,
       "extendInfo": {
         "LSUIElement": 1
+      },
+      "target": {
+        "arch": [
+          "x64",
+          "arm64"
+        ],
+        "target": "dmg"
       }
     },
     "win": {
@@ -29,7 +36,7 @@
   "license": "ISC",
   "dependencies": {
     "custom-electron-prompt": "^1.5.0",
-    "discord.js-selfbot-v13": "^2.6.6",
+    "discord.js-selfbot-v13": "^2.6.12",
     "electron-json-storage": "^4.5.0",
     "electron-preferences": "^2.6.0",
     "puppeteer-core": "^13.5.1",
