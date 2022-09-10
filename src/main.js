@@ -10,11 +10,14 @@ const storage = require('electron-json-storage')
 const pie = require('puppeteer-in-electron')
 const puppeteer = require('puppeteer-core')
 let tray, page, backService, overlay, contextMenu, serverId, channelId
+let darwin = true
 let overlayUnpinned = false
 
 nativeTheme.themeSource = 'dark'
 if (process.platform === 'darwin') {
   app.dock.hide()
+} else {
+  darwin = false
 }
 
 let windowState = {
@@ -168,6 +171,7 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
             devTools: false
           }
         })
+        overlay.setSkipTaskbar(!darwin)
         overlay.setBounds(windowState)
         overlay.setAlwaysOnTop(true, 'screen-saver')
         overlay.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
