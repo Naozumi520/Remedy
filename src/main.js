@@ -59,7 +59,8 @@ function createMenu (tab1, tab2, tab3) {
         overlayUnpinned = !overlayUnpinned
         overlay.setIgnoreMouseEvents(!overlayUnpinned)
         overlay.setFocusable(overlayUnpinned)
-        storage.set('screenPosition', { windowState: overlay.getBounds() })
+        const bounds = overlay.getBounds()
+        storage.set('screenPosition', { windowState: bounds })
         windowState = bounds
       }
     },
