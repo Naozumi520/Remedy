@@ -60,6 +60,7 @@ function createMenu (tab1, tab2, tab3) {
         overlay.setIgnoreMouseEvents(!overlayUnpinned)
         overlay.setFocusable(overlayUnpinned)
         storage.set('screenPosition', { windowState: overlay.getBounds() })
+        windowState = bounds
       }
     },
     {
@@ -198,6 +199,7 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
         createMenu('Preferences menu', 'Unpin overlay', 'Close')
         const bounds = overlay.getBounds()
         storage.set('screenPosition', { windowState: bounds })
+        windowState = bounds
         overlay?.close()
       } catch (e) {
         // log(e, 'voiceStateUpdate')
