@@ -1,6 +1,6 @@
 {
   "name": "remedypro",
-  "version": "1.1.5",
+  "version": "1.1.6",
   "description": "Unofficial Discord overlay support for MacOS",
   "main": "src/main.js",
   "scripts": {

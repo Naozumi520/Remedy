@@ -35,8 +35,9 @@ console.log = function (text, input) {
     spans = document.getElementsByTagName('span')
     const id = input.data.user.id; const name = input.data.nick; uState = input.data.voice_state
     for (let i = 0; i < spans.length; i++) {
-      const attributes = spans[i].attributes['data-reactid'].value
-      if (attributes.match(/\d{18}/g)[0] === id) {
+      let element = document.getElementsByClassName(spans[0].className)[i].parentElement
+      let imgSrc = element.parentElement.getElementsByTagName('img')[0].src
+      if (imgSrc.match(/\d{18}/g)[0] === id) {
         text = name
         if (uState.self_mute || uState.mute) {
           text += muteicon
@@ -68,8 +69,9 @@ ipcRenderer.on('event', (_, msg) => {
       break
   }
   for (let i = 0; i < spans.length; i++) {
-    const attributes = spans[i].attributes['data-reactid'].value
-    if (attributes.match(/\d{18}/g)[0] === args.userId) {
+    let element = document.getElementsByClassName(spans[0].className)[i].parentElement
+    let imgSrc = element.parentElement.getElementsByTagName('img')[0].src
+    if (imgSrc.match(/\d{18}/g)[0] === args.userId) {
       text = args.user
       if (uState.self_mute || uState.mute) {
         text += muteicon

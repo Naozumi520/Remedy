@@ -13,6 +13,7 @@ let tray, page, backService, overlay, contextMenu, serverId, channelId
 let darwin = true
 let overlayUnpinned = false
 
+const notPackaged = !app.isPackaged
 nativeTheme.themeSource = 'dark'
 if (process.platform === 'darwin') {
   app.dock.hide()
@@ -25,7 +26,7 @@ let windowState = {
   y: 0
 }
 
-function log (message, type) {
+function log(message, type) {
   message.split('\n').forEach(line => console.log(`Remedy Pro [${type || 'info'}]: ${line}`))
 };
 
@@ -33,12 +34,12 @@ client.on('ready', async () => {
   log(`logged in with account ${client.user.username}.`)
 })
 
-async function initialize () {
+async function initialize() {
   log(`Starting services\nVersion ${require('../package.json').version}`, 'client')
   await pie.initialize(app)
 }
 
-function createMenu (tab1, tab2, tab3) {
+function createMenu(tab1, tab2, tab3) {
   contextMenu = Menu.buildFromTemplate([
     {
       label: tab1,
@@ -76,7 +77,7 @@ function createMenu (tab1, tab2, tab3) {
   return contextMenu
 }
 
-async function createWindow () {
+async function createWindow() {
   log('Creating window...', 'client')
   storage.get('screenPosition', function (error, object) {
     if (error) throw error
@@ -127,31 +128,20 @@ app.on('ready', async () => {
 
 client.on('voiceStateUpdate', async (oldState, newState) => {
   if (oldState.streaming === false && newState.streaming === true) {
-    // log((!newState.member?.nickname ? newState.user.username : newState.member?.nickname) + ' started streaming!')
+    if (notPackaged) log((!newState.member?.nickname ? newState.user.username : newState.member?.nickname) + ' started streaming!')
     if (overlay) {
       overlay.webContents.send('event', { action: 'stream:start', args: { user: (!newState.member?.nickname ? newState.user.username : newState.member?.nickname), userId: (!newState.member?.id ? newState.user.id : newState.member?.id) } })
     }
   }
   if (oldState.streaming === true && newState.streaming === false) {
-    // log((!oldState.member?.nickname ? oldState.user.username : oldState.member?.nickname) + ' stopped streaming!')
+    if (notPackaged) log((!oldState.member?.nickname ? oldState.user.username : oldState.member?.nickname) + ' stopped streaming!')
     if (overlay) {
       overlay.webContents.send('event', { action: 'stream:stop', args: { user: (!oldState.member?.nickname ? oldState.user.username : oldState.member?.nickname), userId: (!oldState.member?.id ? oldState.user.id : oldState.member?.id) } })
     }
   }
   if (newState?.user === client.user) {
-    if (oldState.selfMute === true && newState.selfMute === false) return
-    if (oldState.selfMute === false && newState.selfMute === true) return
-    if (oldState.selfDeaf === true && newState.selfDeaf === false) return
-    if (oldState.selfDeaf === false && newState.selfDeaf === true) return
-    if (oldState.serverMute === true && newState.serverMute === false) return
-    if (oldState.serverMute === false && newState.serverMute === true) return
-    if (oldState.serverDeaf === true && newState.serverDeaf === false) return
-    if (oldState.serverDeaf === false && newState.serverDeaf === true) return
-    if (oldState.selfVideo === true && newState.selfVideo === false) return
-    if (oldState.selfVideo === false && newState.selfVideo === true) return
-    if (oldState.streaming === true && newState.streaming === false) return
-    if (oldState.streaming === false && newState.streaming === true) return
-    if (newState.channelId !== oldState.channelId && !oldState.channelId) {
+    if (oldState.channelId === newState.channelId) return
+    if (!oldState.channelId) {
       serverId = newState.guild.id
       channelId = newState.channelId
       // log(`User joined voice channel:\nServer ID: ${serverId}\nChannel ID: ${channelId}`, 'voiceStateUpdate')
@@ -170,7 +160,7 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
             nodeIntegration: true,
             contextIsolation: false,
             zoomFactor: 0.85,
-            devTools: false
+            devTools: notPackaged
           }
         })
         overlay.setSkipTaskbar(!darwin)
@@ -186,7 +176,7 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
         log('Overlay loaded:', 'voiceStateUpdate')
         log(url, 'voiceStateUpdate')
         await overlay.webContents.insertCSS(`
-          .voice-container {
+          #root {
             -webkit-app-region: drag;
             user-select: none;
             pointer-events: none;
@@ -218,7 +208,7 @@ preferences.on('save', () => {
   }
 })
 
-function loginSetup () {
+function loginSetup() {
   const prompt = new BrowserWindow({
     title: 'Remedy login prompt',
     titleBarStyle: 'hidden',
