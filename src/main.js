@@ -26,7 +26,7 @@ let windowState = {
   y: 0
 }
 
-function log(message, type) {
+function log (message, type) {
   message.split('\n').forEach(line => console.log(`Remedy Pro [${type || 'info'}]: ${line}`))
 };
 
@@ -34,12 +34,12 @@ client.on('ready', async () => {
   log(`logged in with account ${client.user.username}.`)
 })
 
-async function initialize() {
+async function initialize () {
   log(`Starting services\nVersion ${require('../package.json').version}`, 'client')
   await pie.initialize(app)
 }
 
-function createMenu(tab1, tab2, tab3) {
+function createMenu (tab1, tab2, tab3) {
   contextMenu = Menu.buildFromTemplate([
     {
       label: tab1,
@@ -77,7 +77,7 @@ function createMenu(tab1, tab2, tab3) {
   return contextMenu
 }
 
-async function createWindow() {
+async function createWindow () {
   log('Creating window...', 'client')
   storage.get('screenPosition', function (error, object) {
     if (error) throw error
@@ -208,7 +208,7 @@ preferences.on('save', () => {
   }
 })
 
-function loginSetup() {
+function loginSetup () {
   const prompt = new BrowserWindow({
     title: 'Remedy login prompt',
     titleBarStyle: 'hidden',
