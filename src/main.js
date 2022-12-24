@@ -3,7 +3,7 @@ const { Client, DiscordAuthWebsocket } = require('discord.js-selfbot-v13')
 const client = new Client({
   DMSync: preferences.preferences.Interface.dm_sync.includes('dm_sync')
 })
-const { app, BrowserWindow, ipcMain, Menu, Tray, nativeTheme, nativeImage } = require('electron')
+const { app, BrowserWindow, ipcMain, Menu, Tray, nativeTheme, nativeImage, dialog } = require('electron')
 const fs = require('fs')
 const path = require('path')
 const storage = require('electron-json-storage')
@@ -44,11 +44,12 @@ function createMenu (tab1, tab2, tab3) {
     {
       label: tab1,
       click: function () {
-        try {
-          preferences.prefsWindow.show()
-        } catch (e) {
-          preferences.show()
-        }
+        preferences.show()
+        preferences.prefsWindow?.show()
+        preferences.prefsWindow.once('closed', () => {
+          app.dock.hide()
+        })
+        app.dock.show()
       }
     },
     {
@@ -170,19 +171,24 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
         overlay.setIgnoreMouseEvents(true)
         overlay.setFocusable(false)
         overlay.webContents.setZoomFactor(90)
-        overlay.webContents.executeJavaScript(fs.readFileSync(path.join(__dirname, '/overlayScript.js')))
-        const url = `https://streamkit.discord.com/overlay/voice/${serverId}/${channelId}?icon=true&online=true&logo=white&text_color=${preferences.preferences.Interface.txt_color.replace('#', '%23')}&text_size=${preferences.preferences.Interface.txt_size}&text_outline_color=${preferences.preferences.Interface.txt_outline_color.replace('#', '%23')}&text_outline_size=${preferences.preferences.Interface.txt_outline_size}&text_shadow_color=${preferences.preferences.Interface.txt_shadow_color.replace('#', '%23')}&text_shadow_size=${preferences.preferences.Interface.txt_shadow_size}&bg_color=${preferences.preferences.Interface.bg_color.replace('#', '%23')}&bg_opacity=${parseFloat(preferences.preferences.Interface.bg_opacity) / 100}&bg_shadow_color=${preferences.preferences.Interface.bg_shadow_color.replace('#', '%23')}&bg_shadow_size=${preferences.preferences.Interface.bg_shadow_size}&invite_code=&limit_speaking=${preferences.preferences.Interface.general.includes('users_only')}&small_avatars=${preferences.preferences.Interface.general.includes('small_avt')}&hide_names=${preferences.preferences.Interface.general.includes('hide_nick')}&fade_chat=0`
+        const url = `https://streamkit.discord.com/overlay/voice/${serverId}/${channelId}?icon=true&online=true&logo=white&text_color=${preferences.preferences.Interface.txt_color.replace('#', '%23')}&text_size=${preferences.preferences.Interface.txt_size}&text_outline_color=${preferences.preferences.Interface.txt_outline_color.replace('#', '%23')}&text_outline_size=${preferences.preferences.Interface.txt_outline_size}&text_shadow_color=${preferences.preferences.Interface.txt_shadow_color.replace('#', '%23')}&text_shadow_size=${preferences.preferences.Interface.txt_shadow_size}&bg_color=${preferences.preferences.Interface.bg_color.replace('#', '%23')}&bg_opacity=${parseFloat(preferences.preferences.Interface.opacity) / 100}&bg_shadow_color=${preferences.preferences.Interface.bg_shadow_color.replace('#', '%23')}&bg_shadow_size=${preferences.preferences.Interface.bg_shadow_size}&invite_code=&limit_speaking=${preferences.preferences.Interface.general.includes('users_only')}&small_avatars=${preferences.preferences.Interface.general.includes('small_avt')}&hide_names=${preferences.preferences.Interface.general.includes('hide_nick')}&fade_chat=0`
         overlay.loadURL(url.replaceAll('true', 'True'))
-        log('Overlay loaded:', 'voiceStateUpdate')
-        log(url, 'voiceStateUpdate')
-        await overlay.webContents.insertCSS(`
+        overlay.webContents.on('did-finish-load', () => {
+          overlay.webContents.executeJavaScript(fs.readFileSync(path.join(__dirname, '/overlayScript.js')))
+          if (notPackaged) overlay.webContents.openDevTools({ mode: 'detach' })
+          log('Overlay loaded', 'voiceStateUpdate')
+          overlay.webContents.insertCSS(`
           #root {
             -webkit-app-region: drag;
             user-select: none;
             pointer-events: none;
           }
+          img[class^="Voice_avatar"] {
+            opacity: ${parseFloat(preferences.preferences.Interface.opacity) / 100};
+          }
         `)
-        contextMenu.items[1].enabled = true
+          contextMenu.items[1].enabled = true
+        })
       }
     } else {
       try {
@@ -202,9 +208,22 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
 
 preferences.on('save', () => {
   if (overlay) {
-    const url = `https://streamkit.discord.com/overlay/voice/${serverId}/${channelId}?icon=true&online=true&logo=white&text_color=${preferences.preferences.Interface.txt_color.replace('#', '%23')}&text_size=${preferences.preferences.Interface.txt_size}&text_outline_color=${preferences.preferences.Interface.txt_outline_color.replace('#', '%23')}&text_outline_size=${preferences.preferences.Interface.txt_outline_size}&text_shadow_color=${preferences.preferences.Interface.txt_shadow_color.replace('#', '%23')}&text_shadow_size=${preferences.preferences.Interface.txt_shadow_size}&bg_color=${preferences.preferences.Interface.bg_color.replace('#', '%23')}&bg_opacity=${parseFloat(preferences.preferences.Interface.bg_opacity) / 100}&bg_shadow_color=${preferences.preferences.Interface.bg_shadow_color.replace('#', '%23')}&bg_shadow_size=${preferences.preferences.Interface.bg_shadow_size}&invite_code=&limit_speaking=${preferences.preferences.Interface.general.includes('users_only')}&small_avatars=${preferences.preferences.Interface.general.includes('small_avt')}&hide_names=${preferences.preferences.Interface.general.includes('hide_nick')}&fade_chat=0`.replaceAll('true', 'True')
+    const url = `https://streamkit.discord.com/overlay/voice/${serverId}/${channelId}?icon=true&online=true&logo=white&text_color=${preferences.preferences.Interface.txt_color.replace('#', '%23')}&text_size=${preferences.preferences.Interface.txt_size}&text_outline_color=${preferences.preferences.Interface.txt_outline_color.replace('#', '%23')}&text_outline_size=${preferences.preferences.Interface.txt_outline_size}&text_shadow_color=${preferences.preferences.Interface.txt_shadow_color.replace('#', '%23')}&text_shadow_size=${preferences.preferences.Interface.txt_shadow_size}&bg_color=${preferences.preferences.Interface.bg_color.replace('#', '%23')}&bg_opacity=${parseFloat(preferences.preferences.Interface.opacity) / 100}&bg_shadow_color=${preferences.preferences.Interface.bg_shadow_color.replace('#', '%23')}&bg_shadow_size=${preferences.preferences.Interface.bg_shadow_size}&invite_code=&limit_speaking=${preferences.preferences.Interface.general.includes('users_only')}&small_avatars=${preferences.preferences.Interface.general.includes('small_avt')}&hide_names=${preferences.preferences.Interface.general.includes('hide_nick')}&fade_chat=0`.replaceAll('true', 'True')
     overlay.loadURL(url)
-    overlay.webContents.executeJavaScript(fs.readFileSync(path.join(__dirname, '/overlayScript.js')))
+    overlay.webContents.on('did-finish-load', () => {
+      overlay.webContents.executeJavaScript(fs.readFileSync(path.join(__dirname, '/overlayScript.js')))
+      log('Overlay loaded', 'voiceStateUpdate')
+      overlay.webContents.insertCSS(`
+      #root {
+        -webkit-app-region: drag;
+        user-select: none;
+        pointer-events: none;
+      }
+      img[class^="Voice_avatar"] {
+        opacity: ${parseFloat(preferences.preferences.Interface.opacity) / 100};
+      }
+    `)
+    })
   }
 })
 
@@ -279,3 +298,9 @@ storage.get('discordToken', function (error, object) {
     loginSetup()
   })
 })
+
+if (app.isPackaged) {
+  dialog.showErrorBox = function (title, content) {
+    log(`${title}\n${content}`)
+  }
+}

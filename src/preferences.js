@@ -15,7 +15,7 @@ const defaultSettings = {
     bg_color: '#1e2124',
     bg_shadow_color: '#000000',
     bg_shadow_size: '0',
-    bg_opacity: '95',
+    opacity: '90',
     dm_sync: []
   }
 }
@@ -89,8 +89,7 @@ const preferences = new ElectronPreferences({
               {
                 label: 'TEXT Size',
                 key: 'txt_size',
-                type: 'text',
-                format: 'hex',
+                type: 'slider',
                 options: [
                   { label: 'Text Size' }
                 ]
@@ -98,8 +97,7 @@ const preferences = new ElectronPreferences({
               {
                 label: 'TEXT OUTLINE Size',
                 key: 'txt_outline_size',
-                type: 'text',
-                format: 'hex',
+                type: 'slider',
                 options: [
                   { label: 'Text Outline Size' }
                 ]
@@ -107,8 +105,7 @@ const preferences = new ElectronPreferences({
               {
                 label: 'TEXT SHADOW Size',
                 key: 'txt_shadow_size',
-                type: 'text',
-                format: 'hex',
+                type: 'slider',
                 options: [
                   { label: 'Text Shadow Size' }
                 ]
@@ -134,10 +131,17 @@ const preferences = new ElectronPreferences({
               {
                 label: 'BACKGROUND SHADOW SIZE',
                 key: 'bg_shadow_size',
-                type: 'text',
-                format: 'hex',
+                type: 'slider',
                 options: [
                   { label: 'Background Shadow Size' }
+                ]
+              },
+              {
+                label: 'OVERLAY OPACITY',
+                key: 'opacity',
+                type: 'slider',
+                options: [
+                  { label: 'Remedy Overlay opacity (does not affect text)' }
                 ]
               },
               {

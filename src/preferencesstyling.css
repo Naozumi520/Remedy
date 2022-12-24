@@ -21,3 +21,16 @@
 .group .field .bt:hover {
     background-color: rgb(107, 127, 235, 0.5);
 }
+
+.field-slider label {
+    padding: 15px !important;
+}
+
+::-webkit-slider-thumb {
+    background-color: rgb(152, 152, 153) !important;
+}
+
+::-webkit-slider-runnable-track {
+    height: 5px !important;
+    background-color: rgb(70, 70, 72) !important;
+}
