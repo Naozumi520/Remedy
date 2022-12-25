@@ -1,7 +1,8 @@
-const { preferences } = require('./preferences.js')
+const { preferences } = require('./components/preferences/preferences.js')
 const { Client, DiscordAuthWebsocket } = require('discord.js-selfbot-v13')
 const client = new Client({
   DMSync: preferences.preferences.Interface.dm_sync.includes('dm_sync')
+  // patchVoice: true
 })
 const { app, BrowserWindow, ipcMain, Menu, Tray, nativeTheme, nativeImage, dialog } = require('electron')
 const fs = require('fs')
@@ -30,8 +31,14 @@ function log (message, type) {
   message.split('\n').forEach(line => console.log(`Remedy Pro [${type || 'info'}]: ${line}`))
 };
 
-client.on('ready', async () => {
-  log(`logged in with account ${client.user.username}.`)
+app.on('ready', async () => {
+  const trayIcon = nativeImage.createFromPath(path.join(__dirname, '/icon/favicon_menu.png')).resize({
+    width: 16,
+    height: 16
+  })
+  trayIcon.setTemplateImage(true)
+  tray = new Tray(trayIcon)
+  createWindow()
 })
 
 async function initialize () {
@@ -117,14 +124,8 @@ async function createWindow () {
 }
 initialize()
 
-app.on('ready', async () => {
-  const trayIcon = nativeImage.createFromPath(path.join(__dirname, '/icon/favicon_menu.png')).resize({
-    width: 16,
-    height: 16
-  })
-  trayIcon.setTemplateImage(true)
-  tray = new Tray(trayIcon)
-  createWindow()
+client.on('ready', async () => {
+  log(`logged in with account ${client.user.username}.`)
 })
 
 client.on('voiceStateUpdate', async (oldState, newState) => {
@@ -174,7 +175,7 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
         const url = `https://streamkit.discord.com/overlay/voice/${serverId}/${channelId}?icon=true&online=true&logo=white&text_color=${preferences.preferences.Interface.txt_color.replace('#', '%23')}&text_size=${preferences.preferences.Interface.txt_size}&text_outline_color=${preferences.preferences.Interface.txt_outline_color.replace('#', '%23')}&text_outline_size=${preferences.preferences.Interface.txt_outline_size}&text_shadow_color=${preferences.preferences.Interface.txt_shadow_color.replace('#', '%23')}&text_shadow_size=${preferences.preferences.Interface.txt_shadow_size}&bg_color=${preferences.preferences.Interface.bg_color.replace('#', '%23')}&bg_opacity=${parseFloat(preferences.preferences.Interface.opacity) / 100}&bg_shadow_color=${preferences.preferences.Interface.bg_shadow_color.replace('#', '%23')}&bg_shadow_size=${preferences.preferences.Interface.bg_shadow_size}&invite_code=&limit_speaking=${preferences.preferences.Interface.general.includes('users_only')}&small_avatars=${preferences.preferences.Interface.general.includes('small_avt')}&hide_names=${preferences.preferences.Interface.general.includes('hide_nick')}&fade_chat=0`
         overlay.loadURL(url.replaceAll('true', 'True'))
         overlay.webContents.on('did-finish-load', () => {
-          overlay.webContents.executeJavaScript(fs.readFileSync(path.join(__dirname, '/overlayScript.js')))
+          overlay.webContents.executeJavaScript(fs.readFileSync(path.join(__dirname, '/overlayInjectScript.js')))
           if (notPackaged) overlay.webContents.openDevTools({ mode: 'detach' })
           log('Overlay loaded', 'voiceStateUpdate')
           overlay.webContents.insertCSS(`
@@ -211,7 +212,7 @@ preferences.on('save', () => {
     const url = `https://streamkit.discord.com/overlay/voice/${serverId}/${channelId}?icon=true&online=true&logo=white&text_color=${preferences.preferences.Interface.txt_color.replace('#', '%23')}&text_size=${preferences.preferences.Interface.txt_size}&text_outline_color=${preferences.preferences.Interface.txt_outline_color.replace('#', '%23')}&text_outline_size=${preferences.preferences.Interface.txt_outline_size}&text_shadow_color=${preferences.preferences.Interface.txt_shadow_color.replace('#', '%23')}&text_shadow_size=${preferences.preferences.Interface.txt_shadow_size}&bg_color=${preferences.preferences.Interface.bg_color.replace('#', '%23')}&bg_opacity=${parseFloat(preferences.preferences.Interface.opacity) / 100}&bg_shadow_color=${preferences.preferences.Interface.bg_shadow_color.replace('#', '%23')}&bg_shadow_size=${preferences.preferences.Interface.bg_shadow_size}&invite_code=&limit_speaking=${preferences.preferences.Interface.general.includes('users_only')}&small_avatars=${preferences.preferences.Interface.general.includes('small_avt')}&hide_names=${preferences.preferences.Interface.general.includes('hide_nick')}&fade_chat=0`.replaceAll('true', 'True')
     overlay.loadURL(url)
     overlay.webContents.on('did-finish-load', () => {
-      overlay.webContents.executeJavaScript(fs.readFileSync(path.join(__dirname, '/overlayScript.js')))
+      overlay.webContents.executeJavaScript(fs.readFileSync(path.join(__dirname, '/overlayInjectScript.js')))
       log('Overlay loaded', 'voiceStateUpdate')
       overlay.webContents.insertCSS(`
       #root {
@@ -245,7 +246,7 @@ function loginSetup () {
       devTools: false
     }
   })
-  prompt.webContents.loadFile(path.join(__dirname, '/prompt/loginPrompt.html'))
+  prompt.webContents.loadFile(path.join(__dirname, '/components/prompt/loginPrompt.html'))
   prompt.on('close', () => {
     app.quit()
   })

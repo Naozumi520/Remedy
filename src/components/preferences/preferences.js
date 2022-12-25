@@ -30,7 +30,7 @@ const preferences = new ElectronPreferences({
     resizable: false,
     maximizable: false
   },
-  css: 'src/preferencesstyling.css',
+  css: 'src/components/preferences/style.css',
   sections: [
     {
       id: 'Interface',

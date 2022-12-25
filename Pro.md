@@ -10,14 +10,14 @@
 
 ## 1. Installation  
 <p align="center">
-  <img style='height: 50%; width: 50%; object-fit: contain' src="src/image/Remedy_dmg.png" />
+  <img style='height: 50%; width: 50%; object-fit: contain' src="src/img/Remedy_dmg.png" />
 </p>
 
 Download the .dmg from [release page](https://github.com/Naozumi520/Remedy/releases), open the .dmg file and drag the `Remedy Pro.app` to the Applications folder.  
   
 ## 2. Startup  
 <p align="center">
-  <img style='height: 50%; width: 50%; object-fit: contain' src="src/image/Remedy_ico.png" />
+  <img style='height: 50%; width: 50%; object-fit: contain' src="src/img/Remedy_ico.png" />
 </p>
 
 Double click "Remedy Standard" from your application list to open it. For some reasons this app is not signed yet. If you're not able to open the app, follow [this](https://support.apple.com/en-hk/guide/mac-help/mh40616/mac). If remedy run properly, you should able to see the Remedy icon appear in the menu bar.  
@@ -26,13 +26,13 @@ Double click "Remedy Standard" from your application list to open it. For some r
 Currently there are two ways to let you log in to remedy: QR Code and user token.
 ### QRcode: 
 <p align="center">
-  <img style='height: 50%; width: 50%; object-fit: contain' src="src/image/qr_step.png" />
+  <img style='height: 50%; width: 50%; object-fit: contain' src="src/img/qr_step.png" />
 </p>
 Open the discord app on your phone, go to the user page, press "Scan QR Code" button and scan the QR code provided by the remedy prompt.
 
 ### Token:
 <p align="center">
-  <img style='height: 50%; width: 50%; object-fit: contain' src="src/image/token.png" />
+  <img style='height: 50%; width: 50%; object-fit: contain' src="src/img/token.png" />
 </p>
 Click "login with user token" in the bottom left corner then enter your user token in the prompt that pops up.  
 
@@ -45,8 +45,8 @@ Join a random channel. You should now see the overlay.
 
 ## How can I customize or quit the overlay?  
 <p align="center">
-  <img style='height: 50%; width: 50%; object-fit: contain' src="src/image/menu.png" />
-  <img style='height: 50%; width: 50%; object-fit: contain' src="src/image/preferences.png" />
+  <img style='height: 50%; width: 50%; object-fit: contain' src="src/img/menu.png" />
+  <img style='height: 50%; width: 50%; object-fit: contain' src="src/img/preferences.png" />
 </p>
 
 After clicking the Remedy icon, there are few options in the menu bar:   
