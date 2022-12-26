@@ -43,6 +43,34 @@ app.on('ready', async () => {
   trayIcon.setTemplateImage(true)
   tray = new Tray(trayIcon)
   createWindow()
+  if (!app.getAppPath().startsWith('/Applications')) {
+    storage.get('dialogonceshown', function (error, bool) {
+      if (Object.keys(bool).length == 0 || bool == false) {
+        if (error) throw error
+        const dialogFocusMethod = new BrowserWindow()
+        dialogFocusMethod.destroy()// MessageBox is not focus by default, creating a browserWindow and immediately destroy.
+        dialog.showMessageBox({
+          type: 'question',
+          message: 'Move to the Application folder?',
+          detail: 'Some features may require you to move Remedy to the Applications folder in order to work properly.',
+          buttons: [
+            'Move to the Application Folder',
+            'Do not move'
+          ],
+          cancelId: 1,
+          checkboxLabel: 'Don\'t ask again',
+          checkboxChecked: true
+        })
+          .then((result) => {
+            storage.set('dialogonceshown', result.checkboxChecked)
+            if (result.response !== 0) { return }
+            if (result.response === 0) {
+              app.moveToApplicationsFolder()
+            }
+          })
+      }
+    })
+  }
 })
 
 async function initialize () {
