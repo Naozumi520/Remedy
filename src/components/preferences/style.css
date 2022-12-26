@@ -18,6 +18,11 @@ body {
     zoom: 0.9;
 }
 
+.group .field {
+    width: 860px;
+    margin-bottom: 30px;
+}
+
 .group .field .bt {
     background-color: rgb(107, 127, 235);
 }

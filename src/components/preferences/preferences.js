@@ -16,7 +16,8 @@ const defaultSettings = {
     bg_shadow_color: '#000000',
     bg_shadow_size: '0',
     opacity: '90',
-    dm_sync: []
+    dm_sync: [],
+    remedy_opt: []
   }
 }
 
@@ -155,6 +156,18 @@ const preferences = new ElectronPreferences({
                   }
                 ],
                 help: 'DMSync will sync voice event. Enable only if you have many dms channel or remedy didn\'t detect channels, May cause rate limit to gateway.'
+              },
+              {
+                label: 'Remedy option',
+                key: 'remedy_opt',
+                type: 'checkbox',
+                options: [
+                  {
+                    label: 'Start at login',
+                    value: 'start_at_login'
+                  }
+                ],
+                help: 'Startup remedy at macOS login.'
               },
               {
                 label: 'Reset',
