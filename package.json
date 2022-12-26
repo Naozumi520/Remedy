@@ -43,8 +43,8 @@
     "puppeteer-in-electron": "^3.0.5"
   },
   "devDependencies": {
-    "electron": "^17.4.10",
-    "electron-builder": "^23.0.2",
+    "electron": "^22.0.0",
+    "electron-builder": "^23.6.0",
     "standard": "^16.0.4"
   }
 }

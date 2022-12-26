@@ -251,7 +251,16 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
       serverId = newState.guild.id
       channelId = newState.channelId
       // log(`User joined voice channel:\nServer ID: ${serverId}\nChannel ID: ${channelId}`, 'voiceStateUpdate')
-      createOverlay(serverId, channelId)
+      const streamingUsr = []
+      client.user.voice.channel.members.forEach(member => {
+        if (member.voice.streaming && member.voice.streaming !== null && member.voice.streaming !== undefined) {
+          streamingUsr.push({
+            id: member.id,
+            name: member.nickname || member.username
+          })
+        }
+      })
+      createOverlay(serverId, channelId, streamingUsr)
     } else {
       try {
         contextMenu.items[1].enabled = false
