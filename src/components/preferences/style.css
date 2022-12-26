@@ -1,3 +1,7 @@
+body {
+    background: rgb(45, 46, 48);
+}
+
 .sidebar {
     display: none;
 }
@@ -20,6 +24,11 @@
 
 .group .field .bt:hover {
     background-color: rgb(107, 127, 235, 0.5);
+}
+
+
+.field-checkbox .checkbox-option input:focus~.check-square {
+    border-color: rgba(0, 0, 0, .1);
 }
 
 .field-slider label {

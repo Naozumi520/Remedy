@@ -16,9 +16,9 @@ const liveicon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 27.02 12.
         d="m 22.175171,9.0041491 h -3.703125 v -6.203125 h 3.609375 v 1 h -2.421875 v 1.484375 h 1.859375 l 0.171875,1 h -2.03125 v 1.71875 h 2.515625 z m 0,0" />
     <style>
         svg {
-            height: 1.4em;
-            padding-left: 3px;
-            transform: translateY(4.5px);
+          height: 1.4em;
+          padding-left: 4px;
+          transform: translateY(5.1px);
         }
     </style>
 </svg>`
@@ -68,24 +68,36 @@ ipcRenderer.on('event', (_, msg) => {
       streamingUsr = streamingUsr.filter(id => id !== args.userId)
       break
   }
-  for (let i = 0; i < spans.length; i++) {
-    const element = document.getElementsByClassName(spans[0].className)[i].parentElement
-    const imgSrc = element.parentElement.getElementsByTagName('img')[0].src
-    if (imgSrc.match(/\d{18}/g)[0] === args.userId) {
-      text = args.user
-      if (uState.self_mute || uState.mute) {
-        text += muteicon
+  function waitElementAppear () {
+    spans = document.getElementsByTagName('span')
+    if (spans.length == 0) {
+      setTimeout(() => {
+        waitElementAppear()
+      }, 0)
+    } else {
+      for (let i = 0; i < spans.length; i++) {
+        const element = document.getElementsByClassName(spans[0].className)[i].parentElement
+        const imgSrc = element.parentElement.getElementsByTagName('img')[0].src
+        if (imgSrc.match(/\d{18}/g)[0] === args.userId) {
+          text = args.user
+          if (uState?.self_mute || uState?.mute) {
+            text += muteicon
+          }
+          if (uState?.self_deaf || uState?.deaf) {
+            text += deaficon
+          }
+          if (streamingUsr.includes(args.userId)) {
+            text += liveicon
+            spans[i].parentElement.style.paddingTop = '13px'
+          } else {
+            spans[i].parentElement.style.paddingTop = '18px'
+          }
+          spans[i].innerHTML = text
+        }
       }
-      if (uState.self_deaf || uState.deaf) {
-        text += deaficon
-      }
-      if (streamingUsr.includes(args.userId)) {
-        text += liveicon
-        spans[i].parentElement.style.paddingTop = '13px'
-      } else {
-        spans[i].parentElement.style.paddingTop = '18px'
-      }
-      spans[i].innerHTML = text
     }
   }
+  waitElementAppear()
 })
+
+ipcRenderer.send('scriptReady', true)

@@ -2,7 +2,6 @@ const { preferences } = require('./components/preferences/preferences.js')
 const { Client, DiscordAuthWebsocket } = require('discord.js-selfbot-v13')
 const client = new Client({
   DMSync: preferences.preferences.Interface.dm_sync.includes('dm_sync')
-  // patchVoice: true
 })
 const { app, BrowserWindow, ipcMain, Menu, Tray, nativeTheme, nativeImage, dialog } = require('electron')
 const fs = require('fs')
@@ -31,6 +30,11 @@ function log (message, type) {
   message.split('\n').forEach(line => console.log(`Remedy Pro [${type || 'info'}]: ${line}`))
 };
 
+function safeQuit () {
+  client?.destroy()
+  app.quit()
+}
+
 app.on('ready', async () => {
   const trayIcon = nativeImage.createFromPath(path.join(__dirname, '/icon/favicon_menu.png')).resize({
     width: 16,
@@ -54,9 +58,9 @@ function createMenu (tab1, tab2, tab3) {
         preferences.show()
         preferences.prefsWindow?.show()
         preferences.prefsWindow.once('closed', () => {
-          app.dock.hide()
+          if (darwin) app.dock.hide()
         })
-        app.dock.show()
+        if (darwin) app.dock.show()
       }
     },
     {
@@ -76,8 +80,18 @@ function createMenu (tab1, tab2, tab3) {
     {
       label: tab3,
       click: function () {
-        log('Exited application with code 0')
-        return app.quit()
+        overlay?.webContents.insertCSS(`
+        #root {
+          animation-name: disappear;
+          animation-duration: 1.25s;
+          animation-fill-mode: forwards;
+        }
+        `)
+        setTimeout(() => {
+          log('Exited application with code 0')
+          client.destroy()
+          return safeQuit()
+        }, 200)
       }
     }
   ])
@@ -124,8 +138,98 @@ async function createWindow () {
 }
 initialize()
 
+function createOverlay (serverId, channelId, streamingUsr) {
+  if (!overlay) {
+    overlay = new BrowserWindow({
+      title: 'Remedy Overlay Component',
+      useContentSize: true,
+      x: 0,
+      y: 0,
+      frame: false,
+      hasShadow: false,
+      resizable: false,
+      fullscreenable: false,
+      transparent: true,
+      webPreferences: {
+        nodeIntegration: true,
+        contextIsolation: false,
+        zoomFactor: 0.85,
+        devTools: notPackaged
+      }
+    })
+    overlay.setSkipTaskbar(!darwin)
+    overlay.setBounds(windowState)
+    overlay.setAlwaysOnTop(true, 'screen-saver')
+    overlay.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
+    overlay.setIgnoreMouseEvents(true)
+    overlay.setFocusable(false)
+    overlay.webContents.setZoomFactor(90)
+    const url = `https://streamkit.discord.com/overlay/voice/${serverId}/${channelId}?icon=true&online=true&logo=white&text_color=${preferences.preferences.Interface.txt_color.replace('#', '%23')}&text_size=${preferences.preferences.Interface.txt_size}&text_outline_color=${preferences.preferences.Interface.txt_outline_color.replace('#', '%23')}&text_outline_size=${preferences.preferences.Interface.txt_outline_size}&text_shadow_color=${preferences.preferences.Interface.txt_shadow_color.replace('#', '%23')}&text_shadow_size=${preferences.preferences.Interface.txt_shadow_size}&bg_color=${preferences.preferences.Interface.bg_color.replace('#', '%23')}&bg_opacity=${parseFloat(preferences.preferences.Interface.opacity) / 100}&bg_shadow_color=${preferences.preferences.Interface.bg_shadow_color.replace('#', '%23')}&bg_shadow_size=${preferences.preferences.Interface.bg_shadow_size}&invite_code=&limit_speaking=${preferences.preferences.Interface.general.includes('users_only')}&small_avatars=${preferences.preferences.Interface.general.includes('small_avt')}&hide_names=${preferences.preferences.Interface.general.includes('hide_nick')}&fade_chat=0`
+    overlay.loadURL(url.replaceAll('true', 'True'))
+    overlay.webContents.on('did-finish-load', () => {
+      overlay.webContents.executeJavaScript(fs.readFileSync(path.join(__dirname, '/overlayInjectScript.js')))
+      ipcMain.once('scriptReady', (_, msg) => {
+        if (streamingUsr && streamingUsr !== null && streamingUsr !== undefined) {
+          for (let i = 0; i < streamingUsr.length; i++) {
+            const member = streamingUsr[i]
+            overlay.webContents.send('event', { action: 'stream:start', args: { user: member.name, userId: member.id } })
+          }
+        }
+      })
+      if (notPackaged) overlay.webContents.openDevTools({ mode: 'detach' })
+      log('Overlay loaded', 'voiceStateUpdate')
+      overlay.webContents.insertCSS(`
+      #root {
+        -webkit-app-region: drag;
+        user-select: none;
+        pointer-events: none;
+        margin-top: -12px !important;
+      }
+      img[class^="Voice_avatar"] {
+        opacity: ${parseFloat(preferences.preferences.Interface.opacity) / 100};
+      }
+      @keyframes disappear {
+        0% {
+          opacity: 1;
+          transform-origin: center;
+        }
+
+        20% {
+          opacity: 0.2;
+          transform: translateX(-30rem);
+          transform-origin: center;
+        }
+
+        100% {
+            display: none;
+            opacity: 0;
+            transform: translateX(-60rem);
+            transform-origin: center;
+        }
+      }
+    `)
+      contextMenu.items[1].enabled = true
+    })
+  }
+}
+
 client.on('ready', async () => {
   log(`logged in with account ${client.user.username}.`)
+  if (client.user.voice.channel !== null && client.user.voice.channelId !== null) {
+    serverId = client.user.voice.channel.guildId
+    channelId = client.user.voice.channelId
+    // log(`User already joined a voice channel before started up:\nServer ID: ${serverId}\nChannel ID: ${channelId}`, 'voiceStateUpdate')
+    const streamingUsr = []
+    client.user.voice.channel.members.forEach(member => {
+      if (member.voice.streaming && member.voice.streaming !== null && member.voice.streaming !== undefined) {
+        streamingUsr.push({
+          id: member.id,
+          name: member.nickname || member.username
+        })
+      }
+    })
+    createOverlay(serverId, channelId, streamingUsr)
+  }
 })
 
 client.on('voiceStateUpdate', async (oldState, newState) => {
@@ -147,50 +251,7 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
       serverId = newState.guild.id
       channelId = newState.channelId
       // log(`User joined voice channel:\nServer ID: ${serverId}\nChannel ID: ${channelId}`, 'voiceStateUpdate')
-      if (!overlay) {
-        overlay = new BrowserWindow({
-          title: 'Remedy Overlay Component',
-          useContentSize: true,
-          x: 0,
-          y: 0,
-          frame: false,
-          hasShadow: false,
-          resizable: false,
-          fullscreenable: false,
-          transparent: true,
-          webPreferences: {
-            nodeIntegration: true,
-            contextIsolation: false,
-            zoomFactor: 0.85,
-            devTools: notPackaged
-          }
-        })
-        overlay.setSkipTaskbar(!darwin)
-        overlay.setBounds(windowState)
-        overlay.setAlwaysOnTop(true, 'screen-saver')
-        overlay.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
-        overlay.setIgnoreMouseEvents(true)
-        overlay.setFocusable(false)
-        overlay.webContents.setZoomFactor(90)
-        const url = `https://streamkit.discord.com/overlay/voice/${serverId}/${channelId}?icon=true&online=true&logo=white&text_color=${preferences.preferences.Interface.txt_color.replace('#', '%23')}&text_size=${preferences.preferences.Interface.txt_size}&text_outline_color=${preferences.preferences.Interface.txt_outline_color.replace('#', '%23')}&text_outline_size=${preferences.preferences.Interface.txt_outline_size}&text_shadow_color=${preferences.preferences.Interface.txt_shadow_color.replace('#', '%23')}&text_shadow_size=${preferences.preferences.Interface.txt_shadow_size}&bg_color=${preferences.preferences.Interface.bg_color.replace('#', '%23')}&bg_opacity=${parseFloat(preferences.preferences.Interface.opacity) / 100}&bg_shadow_color=${preferences.preferences.Interface.bg_shadow_color.replace('#', '%23')}&bg_shadow_size=${preferences.preferences.Interface.bg_shadow_size}&invite_code=&limit_speaking=${preferences.preferences.Interface.general.includes('users_only')}&small_avatars=${preferences.preferences.Interface.general.includes('small_avt')}&hide_names=${preferences.preferences.Interface.general.includes('hide_nick')}&fade_chat=0`
-        overlay.loadURL(url.replaceAll('true', 'True'))
-        overlay.webContents.on('did-finish-load', () => {
-          overlay.webContents.executeJavaScript(fs.readFileSync(path.join(__dirname, '/overlayInjectScript.js')))
-          if (notPackaged) overlay.webContents.openDevTools({ mode: 'detach' })
-          log('Overlay loaded', 'voiceStateUpdate')
-          overlay.webContents.insertCSS(`
-          #root {
-            -webkit-app-region: drag;
-            user-select: none;
-            pointer-events: none;
-          }
-          img[class^="Voice_avatar"] {
-            opacity: ${parseFloat(preferences.preferences.Interface.opacity) / 100};
-          }
-        `)
-          contextMenu.items[1].enabled = true
-        })
-      }
+      createOverlay(serverId, channelId)
     } else {
       try {
         contextMenu.items[1].enabled = false
@@ -219,9 +280,29 @@ preferences.on('save', () => {
         -webkit-app-region: drag;
         user-select: none;
         pointer-events: none;
+        margin-top: -12px !important;
       }
       img[class^="Voice_avatar"] {
         opacity: ${parseFloat(preferences.preferences.Interface.opacity) / 100};
+      }
+      @keyframes disappear {
+        0% {
+          opacity: 1;
+          transform-origin: center;
+        }
+
+        20% {
+          opacity: 0.2;
+          transform: translateX(-30rem);
+          transform-origin: center;
+        }
+
+        100% {
+            display: none;
+            opacity: 0;
+            transform: translateX(-60rem);
+            transform-origin: center;
+        }
       }
     `)
     })
