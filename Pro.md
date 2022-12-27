@@ -59,4 +59,7 @@ After clicking the Remedy icon, there are few options in the menu bar:
 Yes, Remedy overlay can override maximized and fullscreen apps.  
 
 ## Can Remedy run automatically on macOS startup?  
-Yes, to do this you can use the macOS [Login Items feature.](https://www.idownloadblog.com/2015/03/24/apps-launch-system-startup-mac/)
+Yes, simply turn on `Start at login` in Preferences
+<p align="center">
+  <img style='height: 50%; width: 50%; object-fit: contain' src="https://user-images.githubusercontent.com/52615455/209567174-0bb68b13-b29c-48ca-aeb0-ade28a8f5b42.png"/>
+</p>
