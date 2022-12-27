@@ -15,13 +15,14 @@ tokenBtn.addEventListener('click', function (e) {
     tokenBtn.innerHTML = defaultInnerHtml.replace('{login_method}', 'login with QR Code')
     const button = document.getElementById('submitToken')
     button.addEventListener('click', function (e) {
+      e.preventDefault()
       button.disabled = true
       if (document.getElementById('token').value.trim() === '') {
         document.getElementById('tokenInput').style.animation = 'shake 0.2s ease-in-out'
         setTimeout(function () {
           document.getElementById('tokenInput').style.animation = 'appear_QR 0.3s ease-in-out'
           button.disabled = false
-        }, 200);
+        }, 200)
       } else {
         ipcRenderer.send('login_m_token', document.getElementById('token').value.trim())
         button.disabled = true
@@ -38,7 +39,7 @@ tokenBtn.addEventListener('click', function (e) {
 
 ipcRenderer.on('event', (_, msg) => {
   switch (msg.action) {
-    case 'qrRen':
+    case 'qrRen': {
       const qrCode = new QRCodeStyling({
         width: 200,
         height: 200,
@@ -59,5 +60,6 @@ ipcRenderer.on('event', (_, msg) => {
       })
       qrCode.append(document.getElementById('qrcode'))
       break
+    }
   }
 })

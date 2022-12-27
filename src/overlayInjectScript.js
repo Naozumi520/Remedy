@@ -61,16 +61,18 @@ ipcRenderer.on('event', (_, msg) => {
   const action = msg.action
   const args = msg.args
   switch (action) {
-    case 'stream:start':
+    case 'stream:start': {
       streamingUsr.push(args.userId)
       break
-    case 'stream:stop':
+    }
+    case 'stream:stop': {
       streamingUsr = streamingUsr.filter(id => id !== args.userId)
       break
+    }
   }
   function waitElementAppear () {
     spans = document.getElementsByTagName('span')
-    if (spans.length == 0) {
+    if (spans.length === 0) {
       setTimeout(() => {
         waitElementAppear()
       }, 0)

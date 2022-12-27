@@ -26,11 +26,11 @@ let windowState = {
   y: 0
 }
 
-function log(message, type) {
+function log (message, type) {
   message.split('\n').forEach(line => console.log(`Remedy Pro [${type || 'info'}]: ${line}`))
 };
 
-function safeQuit() {
+function safeQuit () {
   client?.destroy()
   app.quit()
 }
@@ -45,7 +45,7 @@ app.on('ready', async () => {
   createWindow()
   if (!app.getAppPath().startsWith('/Applications') && app.isPackaged) {
     storage.get('dialogonceshown', function (error, bool) {
-      if (Object.keys(bool).length == 0 || bool == false) {
+      if (Object.keys(bool).length === 0 || bool === false) {
         if (error) throw error
         const dialogFocusMethod = new BrowserWindow()
         dialogFocusMethod.destroy()// MessageBox is not focus by default, creating a browserWindow and immediately destroy.
@@ -73,12 +73,12 @@ app.on('ready', async () => {
   }
 })
 
-async function initialize() {
+async function initialize () {
   log(`Starting services\nVersion ${require('../package.json').version}`, 'client')
   await pie.initialize(app)
 }
 
-function createMenu(tab1, tab2, tab3) {
+function createMenu (tab1, tab2, tab3) {
   contextMenu = Menu.buildFromTemplate([
     {
       label: 'About Remedy...',
@@ -102,12 +102,12 @@ function createMenu(tab1, tab2, tab3) {
           })
           aboutRMD.webContents.loadFile(path.join(__dirname, '/components/about/index.html'))
           aboutRMD.webContents.on('will-navigate', function (e, url) {
-            e.preventDefault();
-            shell.openExternal(url);
-          });
+            e.preventDefault()
+            shell.openExternal(url)
+          })
           aboutRMD.on('closed', function () {
             aboutRMD = null
-          });
+          })
         }
       }
     },
@@ -160,7 +160,7 @@ function createMenu(tab1, tab2, tab3) {
   return contextMenu
 }
 
-async function createWindow() {
+async function createWindow () {
   log('Creating window...', 'client')
   storage.get('screenPosition', function (error, object) {
     if (error) throw error
@@ -199,7 +199,7 @@ async function createWindow() {
 }
 initialize()
 
-function createOverlay(serverId, channelId, streamingUsr) {
+function createOverlay (serverId, channelId, streamingUsr) {
   if (!overlay) {
     overlay = new BrowserWindow({
       title: 'Remedy Overlay Component',
@@ -295,13 +295,13 @@ client.on('ready', async () => {
 
 client.on('voiceStateUpdate', async (oldState, newState) => {
   if (oldState.streaming === false && newState.streaming === true) {
-    if (notPackaged) log((!newState.member?.nickname ? newState.user.username : newState.member?.nickname) + ' started streaming!')
+    // if (notPackaged) log((!newState.member?.nickname ? newState.user.username : newState.member?.nickname) + ' started streaming!')
     if (overlay) {
       overlay.webContents.send('event', { action: 'stream:start', args: { user: (!newState.member?.nickname ? newState.user.username : newState.member?.nickname), userId: (!newState.member?.id ? newState.user.id : newState.member?.id) } })
     }
   }
   if (oldState.streaming === true && newState.streaming === false) {
-    if (notPackaged) log((!oldState.member?.nickname ? oldState.user.username : oldState.member?.nickname) + ' stopped streaming!')
+    // if (notPackaged) log((!oldState.member?.nickname ? oldState.user.username : oldState.member?.nickname) + ' stopped streaming!')
     if (overlay) {
       overlay.webContents.send('event', { action: 'stream:stop', args: { user: (!oldState.member?.nickname ? oldState.user.username : oldState.member?.nickname), userId: (!oldState.member?.id ? oldState.user.id : oldState.member?.id) } })
     }
@@ -388,7 +388,7 @@ preferences.on('save', (pref) => {
   }
 })
 
-function loginSetup() {
+function loginSetup () {
   app.dock.show()
   const prompt = new BrowserWindow({
     title: 'Remedy login prompt',
