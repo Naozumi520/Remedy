@@ -7,7 +7,6 @@
 </h1>
 
 [![CodeFactor](https://www.codefactor.io/repository/github/naozumi520/remedy/badge)](https://www.codefactor.io/repository/github/naozumi520/remedy)
-[![JavaScript Style Guide](https://cdn.rawgit.com/standard/standard/master/badge.svg)](https://github.com/standard/standard)
 
 # Introduction
 Remedy is a application for displaying an overlay of discord voice channels even in fullscreen application under macOS.  
