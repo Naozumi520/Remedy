@@ -34,7 +34,7 @@ Open the discord app on your phone, go to the user page, press "Scan QR Code" bu
 <p align="center">
   <img style='height: 50%; width: 50%; object-fit: contain' src="src/img/token.png" />
 </p>
-Click "login with user token" in the bottom left corner then enter your user token in the prompt that pops up.  
+Click "login with user token" in the bottom right corner then enter your user token in the prompt.  
 
 To get your token, you can refer to [this document](https://github.com/aiko-chan-ai/discord.js-selfbot-v13#get-token-).  
 

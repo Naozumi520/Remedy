@@ -389,6 +389,7 @@ preferences.on('save', (pref) => {
 })
 
 function loginSetup() {
+  app.dock.show()
   const prompt = new BrowserWindow({
     title: 'Remedy login prompt',
     titleBarStyle: 'hidden',
@@ -419,6 +420,7 @@ function loginSetup() {
     .on('finish', (_, token) => {
       storage.set('discordToken', { token: token })
       prompt.destroy()
+      app.dock.hide()
       client.login(token).catch(e => {
         loginSetup()
       })
@@ -426,6 +428,7 @@ function loginSetup() {
   ipcMain.once('login_m_token', (_, token) => {
     storage.set('discordToken', { token })
     prompt.destroy()
+    app.dock.hide()
     client.login(token).catch(e => {
       loginSetup()
     })
