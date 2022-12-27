@@ -180,7 +180,7 @@ async function createWindow() {
     center: true,
     webPreferences: {
       backgroundThrottling: false,
-      devTools: false
+      devTools: notPackaged
     },
     show: false
   })
@@ -237,7 +237,7 @@ function createOverlay(serverId, channelId, streamingUsr) {
           }
         }
       })
-      if (notPackaged) overlay.webContents.openDevTools({ mode: 'detach' })
+      // if (notPackaged) overlay.webContents.openDevTools({ mode: 'detach' })
       log('Overlay loaded', 'voiceStateUpdate')
       overlay.webContents.insertCSS(`
       #root {
@@ -404,7 +404,7 @@ function loginSetup() {
       nodeIntegration: true,
       contextIsolation: false,
       zoomFactor: 0.85,
-      devTools: false
+      devTools: notPackaged
     }
   })
   prompt.webContents.loadFile(path.join(__dirname, '/components/prompt/loginPrompt.html'))

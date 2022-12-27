@@ -91,6 +91,8 @@ const preferences = new ElectronPreferences({
                 label: 'TEXT Size',
                 key: 'txt_size',
                 type: 'slider',
+                min: 1,
+                max: 50,
                 options: [
                   { label: 'Text Size' }
                 ]
@@ -99,6 +101,8 @@ const preferences = new ElectronPreferences({
                 label: 'TEXT OUTLINE Size',
                 key: 'txt_outline_size',
                 type: 'slider',
+                min: 0,
+                max: 50,
                 options: [
                   { label: 'Text Outline Size' }
                 ]
@@ -107,6 +111,8 @@ const preferences = new ElectronPreferences({
                 label: 'TEXT SHADOW Size',
                 key: 'txt_shadow_size',
                 type: 'slider',
+                min: 0,
+                max: 50,
                 options: [
                   { label: 'Text Shadow Size' }
                 ]
@@ -133,6 +139,8 @@ const preferences = new ElectronPreferences({
                 label: 'BACKGROUND SHADOW SIZE',
                 key: 'bg_shadow_size',
                 type: 'slider',
+                min: 0,
+                max: 50,
                 options: [
                   { label: 'Background Shadow Size' }
                 ]
