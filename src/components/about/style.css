@@ -23,6 +23,7 @@ img {
     margin-right: auto;
     margin-top: 28px;
     padding: 0;
+    pointer-events: none;
 }
 
 .title {
