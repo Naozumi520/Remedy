@@ -13,20 +13,38 @@
     <div class="dragArea"></div>
     <div class="loginCard">
         <div id="qrcode" class="qrcode"></div>
-        <span class="loginTXT"><span><span style="color:#5865f2;">L</span><span style="color:#629ef9;">o</span><span
-                    style="color:#5865f2;">g</span><span style="color:#629ef9;">i</span><span
-                    style="color:#5865f2;">n&nbsp;</span></span><span><span style="color:#629ef9;">w</span><span
-                    style="color:#5865f2;">i</span><span style="color:#629ef9;">t</span><span
-                    style="color:#5865f2;">h&nbsp;</span></span><span><span style="color:#629ef9;">Q</span><span
-                    style="color:#5865f2;">R&nbsp;</span></span><span><span style="color:#629ef9;">C</span><span
-                    style="color:#5865f2;">o</span><span style="color:#629ef9;">d</span><span
-                    style="color:#5865f2;">e</span></span>
+        <div id="tokenInput" class="tokenInput">
+            <label class="lable">&nbsptoken:</label>
+            <br>
+            <input class="input" id="token" placeholder="NDU4Mjc4Nj...">
+            <button class="subBtn" id="submitToken">submit</button>
+        </div>
+        <span class="loginTXT">
+            <div id="qrTxt" class="qrTxt"><span><span style="color:#5865f2;">L</span><span
+                        style="color:#629ef9;">o</span><span style="color:#5865f2;">g</span><span
+                        style="color:#629ef9;">i</span><span style="color:#5865f2;">n&nbsp;</span></span><span><span
+                        style="color:#629ef9;">w</span><span style="color:#5865f2;">i</span><span
+                        style="color:#629ef9;">t</span><span style="color:#5865f2;">h&nbsp;</span></span><span><span
+                        style="color:#629ef9;">Q</span><span style="color:#5865f2;">R&nbsp;</span></span><span><span
+                        style="color:#629ef9;">C</span><span style="color:#5865f2;">o</span><span
+                        style="color:#629ef9;">d</span><span style="color:#5865f2;">e</span></span>
+            </div>
+            <div id="tokenTxt" class="tokenTxt"><span><span style="color:#5865f2;">L</span><span
+                        style="color:#629ef9;">o</span><span style="color:#5865f2;">g</span><span
+                        style="color:#629ef9;">i</span><span style="color:#5865f2;">n&nbsp;</span></span><span><span
+                        style="color:#629ef9;">w</span><span style="color:#5865f2;">i</span><span
+                        style="color:#629ef9;">t</span><span style="color:#5865f2;">h&nbsp;</span></span><span><span
+                        style="color:#629ef9;">u</span><span style="color:#5865f2;">s</span><span
+                        style="color:#629ef9;">e</span><span style="color:#5865f2;">r&nbsp;</span></span><span><span
+                        style="color:#629ef9;">t</span><span style="color:#5865f2;">o</span><span
+                        style="color:#629ef9;">k</span><span style="color:#5865f2;">e</span><span
+                        style="color:#629ef9;">n</span></span>
+            </div>
             <div class="remedy">
                 <p><img src="../../icon/favicon.png" class="remedyIcon" width="30" height="30"> Remedy</p>
             </div>
         </span>
-        <p id="tokenBtn" class="loginTXT_token">Or, <a href="#" class="hyper" draggable="false">login with a user
-                token</a></p>
+        <p id="tokenBtn" class="loginTXT_token">Or, <a href="#" class="hyper" draggable="false">{login_method}</a></p>
     </div>
     <script type="text/javascript" src="https://unpkg.com/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
     </head>

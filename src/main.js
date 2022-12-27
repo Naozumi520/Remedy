@@ -3,13 +3,13 @@ const { Client, DiscordAuthWebsocket } = require('discord.js-selfbot-v13')
 const client = new Client({
   DMSync: preferences.preferences.Interface.dm_sync.includes('dm_sync')
 })
-const { app, BrowserWindow, ipcMain, Menu, Tray, nativeTheme, nativeImage, dialog } = require('electron')
+const { app, BrowserWindow, ipcMain, Menu, Tray, nativeTheme, nativeImage, dialog, shell } = require('electron')
 const fs = require('fs')
 const path = require('path')
 const storage = require('electron-json-storage')
 const pie = require('puppeteer-in-electron')
 const puppeteer = require('puppeteer-core')
-let tray, page, backService, overlay, contextMenu, serverId, channelId
+let tray, page, backService, overlay, contextMenu, aboutRMD, serverId, channelId
 let darwin = true
 let overlayUnpinned = false
 
@@ -26,11 +26,11 @@ let windowState = {
   y: 0
 }
 
-function log (message, type) {
+function log(message, type) {
   message.split('\n').forEach(line => console.log(`Remedy Pro [${type || 'info'}]: ${line}`))
 };
 
-function safeQuit () {
+function safeQuit() {
   client?.destroy()
   app.quit()
 }
@@ -43,7 +43,7 @@ app.on('ready', async () => {
   trayIcon.setTemplateImage(true)
   tray = new Tray(trayIcon)
   createWindow()
-  if (!app.getAppPath().startsWith('/Applications')) {
+  if (!app.getAppPath().startsWith('/Applications') && app.isPackaged) {
     storage.get('dialogonceshown', function (error, bool) {
       if (Object.keys(bool).length == 0 || bool == false) {
         if (error) throw error
@@ -73,13 +73,45 @@ app.on('ready', async () => {
   }
 })
 
-async function initialize () {
+async function initialize() {
   log(`Starting services\nVersion ${require('../package.json').version}`, 'client')
   await pie.initialize(app)
 }
 
-function createMenu (tab1, tab2, tab3) {
+function createMenu(tab1, tab2, tab3) {
   contextMenu = Menu.buildFromTemplate([
+    {
+      label: 'About Remedy...',
+      click: function () {
+        aboutRMD?.show()
+        if (!aboutRMD) {
+          aboutRMD = new BrowserWindow({
+            title: 'Remedy Pro',
+            titleBarStyle: 'hiddenInset',
+            width: 285,
+            height: 167,
+            resizable: false,
+            fullscreenable: false,
+            hasShadow: false,
+            webPreferences: {
+              nodeIntegration: true,
+              contextIsolation: false,
+              zoomFactor: 0.85,
+              devTools: notPackaged
+            }
+          })
+          aboutRMD.webContents.loadFile(path.join(__dirname, '/components/about/index.html'))
+          aboutRMD.webContents.on('will-navigate', function (e, url) {
+            e.preventDefault();
+            shell.openExternal(url);
+          });
+          aboutRMD.on('closed', function () {
+            aboutRMD = null
+          });
+        }
+      }
+    },
+    { type: 'separator' },
     {
       label: tab1,
       click: function () {
@@ -95,7 +127,7 @@ function createMenu (tab1, tab2, tab3) {
       label: tab2,
       enabled: false,
       click: async function () {
-        createMenu('Preferences menu', !overlayUnpinned ? 'Pin overlay' : 'Unpin overlay', 'Close')
+        createMenu('Preferences...', !overlayUnpinned ? 'Pin overlay' : 'Unpin overlay', 'Quit')
         contextMenu.items[1].enabled = true
         overlayUnpinned = !overlayUnpinned
         overlay.setIgnoreMouseEvents(!overlayUnpinned)
@@ -105,6 +137,7 @@ function createMenu (tab1, tab2, tab3) {
         windowState = bounds
       }
     },
+    { type: 'separator' },
     {
       label: tab3,
       click: function () {
@@ -127,7 +160,7 @@ function createMenu (tab1, tab2, tab3) {
   return contextMenu
 }
 
-async function createWindow () {
+async function createWindow() {
   log('Creating window...', 'client')
   storage.get('screenPosition', function (error, object) {
     if (error) throw error
@@ -136,7 +169,7 @@ async function createWindow () {
       windowState = object.windowState
     }
   })
-  createMenu('Preferences menu', 'Unpin overlay', 'Close')
+  createMenu('Preferences...', 'Unpin overlay', 'Quit')
   backService = new BrowserWindow({
     title: 'Remedy Pro Service (Discord StreamKit Overlay)',
     icon: './src/assets/icon/favicon.png',
@@ -166,7 +199,7 @@ async function createWindow () {
 }
 initialize()
 
-function createOverlay (serverId, channelId, streamingUsr) {
+function createOverlay(serverId, channelId, streamingUsr) {
   if (!overlay) {
     overlay = new BrowserWindow({
       title: 'Remedy Overlay Component',
@@ -292,7 +325,7 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
     } else {
       try {
         contextMenu.items[1].enabled = false
-        createMenu('Preferences menu', 'Unpin overlay', 'Close')
+        createMenu('Preferences...', 'Unpin overlay', 'Quit')
         const bounds = overlay.getBounds()
         storage.set('screenPosition', { windowState: bounds })
         windowState = bounds
@@ -355,7 +388,7 @@ preferences.on('save', (pref) => {
   }
 })
 
-function loginSetup () {
+function loginSetup() {
   const prompt = new BrowserWindow({
     title: 'Remedy login prompt',
     titleBarStyle: 'hidden',
@@ -390,33 +423,12 @@ function loginSetup () {
         loginSetup()
       })
     })
-  ipcMain.once('login_m_token', (_, msg) => {
-    try {
-      prompt.destroy()
-      AuthWebsocket.destroy()
-    } catch (e) {
-    } finally {
-      const prompt = require('custom-electron-prompt')
-      prompt({
-        title: 'Login with Discord Token',
-        label: 'Please input your Discord token:',
-        value: '',
-        type: 'input'
-      })
-        .then((r) => {
-          if (r === null) {
-            log('user cancelled', 'client')
-            log('Exited application with code 0', 'client')
-            app.quit()
-          } else {
-            storage.set('discordToken', { token: r })
-            client.login(r).catch(e => {
-              loginSetup()
-            })
-          }
-        })
-        .catch(console.error)
-    }
+  ipcMain.once('login_m_token', (_, token) => {
+    storage.set('discordToken', { token })
+    prompt.destroy()
+    client.login(token).catch(e => {
+      loginSetup()
+    })
   })
 }
 

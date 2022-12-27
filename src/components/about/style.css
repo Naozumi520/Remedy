@@ -1,0 +1,45 @@
+body {
+    margin: 0;
+}
+
+.dragArea {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2em;
+    -webkit-app-region: drag;
+}
+
+.ico_container {
+    text-align: center;
+    font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+}
+
+img {
+    display: block;
+    height: 64px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 28px;
+    padding: 0;
+}
+
+.title {
+    font-size: 15px;
+    margin-top: 8px;
+}
+
+.version {
+    font-size: 12px;
+    margin-top: -10px;
+}
+
+.au {
+    font-size: 12px;
+}
+
+:link,
+:visited {
+    color: rgb(84, 151, 246)
+}
