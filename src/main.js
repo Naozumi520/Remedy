@@ -11,15 +11,10 @@ const pie = require('puppeteer-in-electron')
 const puppeteer = require('puppeteer-core')
 let tray, page, backService, overlay, contextMenu, aboutRMD, serverId, channelId
 let darwin = true
-let overlayUnpinned = false
+let ready, overlayUnpinned = false
 
 const notPackaged = !app.isPackaged
 nativeTheme.themeSource = 'dark'
-if (process.platform === 'darwin') {
-  app.dock.hide()
-} else {
-  darwin = false
-}
 
 let windowState = {
   x: 0,
@@ -207,6 +202,7 @@ function createOverlay (serverId, channelId, streamingUsr) {
       x: 0,
       y: 0,
       frame: false,
+      type: 'panel',
       hasShadow: false,
       resizable: false,
       fullscreenable: false,
@@ -220,8 +216,6 @@ function createOverlay (serverId, channelId, streamingUsr) {
     })
     overlay.setSkipTaskbar(!darwin)
     overlay.setBounds(windowState)
-    overlay.setAlwaysOnTop(true, 'screen-saver')
-    overlay.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
     overlay.setIgnoreMouseEvents(true)
     overlay.setFocusable(false)
     overlay.webContents.setZoomFactor(90)
@@ -240,6 +234,9 @@ function createOverlay (serverId, channelId, streamingUsr) {
       // if (notPackaged) overlay.webContents.openDevTools({ mode: 'detach' })
       log('Overlay loaded', 'voiceStateUpdate')
       overlay.webContents.insertCSS(`
+      * {
+      overflow: none !important;
+      }
       #root {
         -webkit-app-region: drag;
         user-select: none;
@@ -276,6 +273,11 @@ function createOverlay (serverId, channelId, streamingUsr) {
 
 client.on('ready', async () => {
   log(`logged in with account ${client.user.username}.`)
+  if (process.platform === 'darwin') {
+    app.dock.hide()
+  } else {
+    darwin = false
+  }
   if (client.user.voice.channel !== null && client.user.voice.channelId !== null) {
     serverId = client.user.voice.channel.guildId
     channelId = client.user.voice.channelId
@@ -346,6 +348,9 @@ preferences.on('save', (pref) => {
       overlay.webContents.executeJavaScript(fs.readFileSync(path.join(__dirname, '/overlayInjectScript.js')))
       log('Overlay loaded', 'voiceStateUpdate')
       overlay.webContents.insertCSS(`
+      * {
+      overflow: none !important;
+      }
       #root {
         -webkit-app-region: drag;
         user-select: none;
@@ -409,35 +414,46 @@ function loginSetup () {
   })
   prompt.webContents.loadFile(path.join(__dirname, '/components/prompt/loginPrompt.html'))
   prompt.on('close', () => {
-    app.quit()
+    if (!ready) {
+      app.quit()
+    }
   })
   const AuthWebsocket = new DiscordAuthWebsocket()
   AuthWebsocket.connect()
+  AuthWebsocket.on('pending', (user) => {
+    prompt.webContents.send('event', { action: 'pending', args: { avatarUrl: `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}` } })
+    console.log(user)
+  })
   AuthWebsocket.on('ready', (_, url) => {
     prompt.webContents.send('event', { action: 'qrRen', args: { qrCodeUrl: url } })
     prompt.show()
   })
     .on('finish', (_, token) => {
       storage.set('discordToken', { token: token })
-      prompt.destroy()
-      app.dock.hide()
-      client.login(token).catch(e => {
+      console.log('logged in with QR')
+      prompt.webContents.send('event', { action: 'logged', args: {} })
+      client.login(token).catch(() => {
+        ready = true
         loginSetup()
       })
     })
   ipcMain.once('login_m_token', (_, token) => {
     storage.set('discordToken', { token })
-    prompt.destroy()
-    app.dock.hide()
-    client.login(token).catch(e => {
+    prompt.webContents.send('event', { action: 'logged', args: {} })
+    client.login(token).catch(() => {
+      ready = true
       loginSetup()
     })
+  })
+  ipcMain.once('login_m_success', () => {
+    prompt.close()
   })
 }
 
 storage.get('discordToken', function (error, object) {
   if (error) throw error
-  client.login(object.token).catch(e => {
+  client.login(object.token).catch(() => {
+    ready = true
     loginSetup()
   })
 })

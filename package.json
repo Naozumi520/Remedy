@@ -17,8 +17,7 @@
       },
       "target": {
         "arch": [
-          "x64",
-          "arm64"
+          "universal"
         ],
         "target": "dmg"
       }
@@ -41,14 +40,15 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "discord.js-selfbot-v13": "^2.9.19",
+    "discord.js-selfbot-v13": "^2.11.1",
     "electron-json-storage": "^4.5.0",
     "electron-preferences": "^2.6.0",
     "puppeteer-core": "^13.5.1",
-    "puppeteer-in-electron": "^3.0.5"
+    "puppeteer-in-electron": "^3.0.5",
+    "swup": "^2.0.19"
   },
   "devDependencies": {
-    "electron": "^22.0.0",
+    "electron": "^23.1.1",
     "electron-builder": "^23.6.0",
     "modclean": "^3.0.0-beta.1",
     "standard": "^16.0.4"

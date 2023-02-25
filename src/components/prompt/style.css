@@ -1,3 +1,14 @@
+.transition-fade {
+    transition: 0.2s ease-in-out;
+    transform: scale(1);
+    opacity: 1;
+}
+
+html.is-animating .transition-fade {
+    transform: scale(0.9);
+    opacity: 0;
+}
+
 @keyframes shake {
     0% {
         -webkit-transform: translate(-17px);
@@ -24,10 +35,28 @@ html {
     font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont;
 }
 
+* {
+    user-select: none !important;
+}
+
 body {
-    margin: 0;
+    margin-top: 295px;
     background-color: rgb(110, 124, 239);
     overflow: hidden;
+}
+
+.debug_menu {
+    display: none;
+    color: black;
+    background: grey;
+    width: 210px;
+}
+
+.stBtn_AT,
+.stBtn,
+.RBtn,
+.errBtn {
+    display: block;
 }
 
 .dragArea {
@@ -89,11 +118,10 @@ a {
     display: inline-block;
     position: absolute;
     bottom: 50%;
-    user-select: none;
     pointer-events: none;
-    animation-name: appear_QR;
     animation-duration: 0.3s;
     animation-timing-function: ease-in-out;
+    animation-fill-mode: forwards;
 }
 
 .tokenInput {
@@ -141,6 +169,61 @@ a {
     display: none;
 }
 
+.avt {
+    height: 120px;
+    margin-bottom: 250px;
+    border-radius: 50%;
+}
+
+.Txt_con {
+    position: absolute;
+    margin-top: 150px;
+}
+
+.checkPhone {
+    text-align: center;
+    font-weight: 500;
+    color: rgb(60, 65, 70);
+    font-size: 22px;
+}
+
+.log_as {
+    font-weight: 250;
+}
+
+.retry {
+    text-align: center;
+    margin-top: 150px;
+}
+
+.ico {
+    position: absolute;
+    margin-bottom: 250px;
+    height: 100px;
+}
+
+.successHead {
+    font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+    font-weight: 100;
+    margin-top: 100px;
+    box-shadow: rgba(50, 50, 93, 0.25) 0px 30px 60px -12px inset, rgba(0, 0, 0, 0.3) 0px 18px 36px -18px inset;
+    border-radius: 8px;
+    padding: 5px;
+}
+
+.welcome {
+    width: 500px;
+    padding: 30px;
+    margin-top: 100px;
+}
+
+.finishBtn {
+    position: absolute;
+    margin-top: 350px;
+    width: 200px;
+    height: 50px;
+}
+
 @keyframes appear_QR {
     from {
         opacity: 0;
@@ -150,5 +233,17 @@ a {
     to {
         opacity: 1;
         transform: scale(1);
+    }
+}
+
+@keyframes disappear_QR {
+    from {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    to {
+        opacity: 0;
+        transform: scale(1.5);
     }
 }
