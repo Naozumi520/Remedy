@@ -145,7 +145,6 @@ function createMenu (tab1, tab2, tab3) {
         `)
         setTimeout(() => {
           log('Exited application with code 0')
-          client.destroy()
           return safeQuit()
         }, 200)
       }
@@ -414,9 +413,11 @@ function loginSetup () {
   })
   prompt.webContents.loadFile(path.join(__dirname, '/components/prompt/loginPrompt.html'))
   prompt.on('close', () => {
-    if (!ready) {
-      app.quit()
-    }
+    setTimeout(() => {
+      if (!ready) {
+        app.quit()
+      }
+    }, 1000)
   })
   const AuthWebsocket = new DiscordAuthWebsocket()
   AuthWebsocket.connect()
@@ -429,19 +430,23 @@ function loginSetup () {
     prompt.show()
   })
     .on('finish', (_, token) => {
+      ready = true
       storage.set('discordToken', { token: token })
       console.log('logged in with QR')
       prompt.webContents.send('event', { action: 'logged', args: {} })
-      client.login(token).catch(() => {
-        ready = true
+      client.login(token).catch((e) => {
+        console.log('login failed')
+        console.log(e)
         loginSetup()
       })
     })
   ipcMain.once('login_m_token', (_, token) => {
+    ready = true
     storage.set('discordToken', { token })
     prompt.webContents.send('event', { action: 'logged', args: {} })
-    client.login(token).catch(() => {
-      ready = true
+    client.login(token).catch((e) => {
+      console.log('login failed')
+      console.log(e)
       loginSetup()
     })
   })
@@ -452,8 +457,9 @@ function loginSetup () {
 
 storage.get('discordToken', function (error, object) {
   if (error) throw error
-  client.login(object.token).catch(() => {
-    ready = true
+  client.login(object.token).catch((e) => {
+    console.log('login failed')
+    console.log(e)
     loginSetup()
   })
 })
