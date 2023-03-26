@@ -87,9 +87,9 @@ async function createWindow () {
     center: true,
     webPreferences: {
       backgroundThrottling: false,
-      devTools: true
+      devTools: false
     },
-    show: true
+    show: false
   })
   initializer.loadURL('https://streamkit.discord.com/overlay')
   const browser = await pie.connect(app, puppeteer)
