@@ -13,6 +13,12 @@
       "asar": true,
       "extendInfo": {
         "LSUIElement": 1
+      },
+      "target": {
+        "arch": [
+          "universal"
+        ],
+        "target": "dmg"
       }
     }
   },
