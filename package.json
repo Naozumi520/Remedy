@@ -1,6 +1,6 @@
 {
   "name": "remedystandard",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Unofficial Discord overlay support for MacOS",
   "main": "src/main.js",
   "scripts": {
@@ -20,13 +20,13 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "electron-json-storage": "^4.5.0",
-    "puppeteer-core": "^13.5.1",
+    "electron-json-storage": "^4.6.0",
+    "puppeteer-core": "^19.8.0",
     "puppeteer-in-electron": "^3.0.5"
   },
   "devDependencies": {
-    "electron": "^17.1.2",
-    "electron-builder": "^23.0.2",
-    "standard": "^16.0.4"
+    "electron": "^23.2.0",
+    "electron-builder": "^23.6.0",
+    "standard": "^17.0.0"
   }
 }
