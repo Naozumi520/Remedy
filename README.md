@@ -29,7 +29,7 @@ Remedy comes in two editions, Standard and Pro. This app was made using the Disc
 | Discord chat overlay                                     | :x:                | :white_check_mark: |
 
 ## Usage
-[Standard](Standard.md) | [Pro](Pro.md)ss
+[Standard](Standard.md) | [Pro](Pro.md)
 
 ## Credit
 ### [trigg](https://github.com/trigg) / [Discover](https://github.com/trigg/Discover)
