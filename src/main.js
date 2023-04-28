@@ -1,17 +1,19 @@
 const { preferences } = require('./components/preferences/preferences.js')
-const { Client, DiscordAuthWebsocket } = require('discord.js-selfbot-v13')
+const { Client } = require('discord.js-selfbot-v13')
 const client = new Client({
   DMSync: preferences.preferences.Interface.dm_sync.includes('dm_sync')
 })
-const { app, BrowserWindow, ipcMain, Menu, Tray, nativeTheme, nativeImage, dialog, shell } = require('electron')
+const { app, session, screen, globalShortcut, BrowserWindow, BrowserView, ipcMain, Menu, Tray, nativeTheme, nativeImage, dialog, shell } = require('electron')
 const fs = require('fs')
 const path = require('path')
 const storage = require('electron-json-storage')
 const pie = require('puppeteer-in-electron')
 const puppeteer = require('puppeteer-core')
-let tray, page, backService, overlay, contextMenu, aboutRMD, serverId, channelId
+let tray, page, discordAppOverlay, discordAppView, backService, overlay, contextMenu, aboutRMD, serverId, channelId
 let darwin = true
-let ready, overlayUnpinned = false
+let ready; let discordAppCurrentlyShowing; let overlayUnpinned = false
+
+// app.disableHardwareAcceleration() // urn off Hardware Acceleration to make the overlay smoother during gaming or video playback. This will also help make the experience smoother.
 
 const notPackaged = !app.isPackaged
 nativeTheme.themeSource = 'dark'
@@ -31,41 +33,56 @@ function safeQuit () {
 }
 
 app.on('ready', async () => {
-  const trayIcon = nativeImage.createFromPath(path.join(__dirname, '/icon/favicon_menu.png')).resize({
-    width: 16,
-    height: 16
-  })
-  trayIcon.setTemplateImage(true)
-  tray = new Tray(trayIcon)
-  createWindow()
-  if (!app.getAppPath().startsWith('/Applications') && app.isPackaged) {
-    storage.get('dialogonceshown', function (error, bool) {
-      if (Object.keys(bool).length === 0 || bool === false) {
-        if (error) throw error
-        const dialogFocusMethod = new BrowserWindow()
-        dialogFocusMethod.destroy()// MessageBox is not focus by default, creating a browserWindow and immediately destroy.
-        dialog.showMessageBox({
-          type: 'question',
-          message: 'Move to the Application folder?',
-          detail: 'Some features may require you to move Remedy to the Applications folder in order to work properly.',
-          buttons: [
-            'Move to the Application Folder',
-            'Do not move'
-          ],
-          cancelId: 1,
-          checkboxLabel: 'Don\'t ask again',
-          checkboxChecked: true
-        })
-          .then((result) => {
-            storage.set('dialogonceshown', result.checkboxChecked)
-            if (result.response !== 0) { return }
-            if (result.response === 0) {
-              app.moveToApplicationsFolder()
-            }
-          })
-      }
+  discordAppView = new BrowserView()
+  discordAppView.webContents.loadURL('https://discord.com/login')
+  discordAppView.webContents.once('did-finish-load', () => {
+    discordAppView.webContents.executeJavaScript(fs.readFileSync(path.join(__dirname, '/discordAppCustomization.js')))
+    const trayIcon = nativeImage.createFromPath(path.join(__dirname, '/icon/favicon_menu.png')).resize({
+      width: 16,
+      height: 16
     })
-  }
+    trayIcon.setTemplateImage(true)
+    tray = new Tray(trayIcon)
+    storage.get('discordToken', function (error, object) {
+      if (error) throw error
+      ready = true
+      client.login(object.token).catch((e) => {
+        ready = false
+        console.log('login failed')
+        console.log(e)
+        loginSetup()
+      })
+    })
+    createWindow()
+    if (!app.getAppPath().startsWith('/Applications') && app.isPackaged) {
+      storage.get('dialogonceshown', function (error, bool) {
+        if (Object.keys(bool).length === 0 || bool === false) {
+          if (error) throw error
+          const dialogFocusMethod = new BrowserWindow()
+          dialogFocusMethod.destroy()// MessageBox is not focus by default, creating a browserWindow and immediately destroy.
+          dialog.showMessageBox({
+            type: 'question',
+            message: 'Move to the Application folder?',
+            detail: 'Some features may require you to move Remedy to the Applications folder in order to work properly.',
+            buttons: [
+              'Move to the Application Folder',
+              'Do not move'
+            ],
+            cancelId: 1,
+            checkboxLabel: 'Don\'t ask again',
+            checkboxChecked: true
+          })
+            .then((result) => {
+              storage.set('dialogonceshown', result.checkboxChecked)
+              if (result.response !== 0) { return }
+              if (result.response === 0) {
+                app.moveToApplicationsFolder()
+              }
+            })
+        }
+      })
+    }
+  })
 })
 
 async function initialize () {
@@ -123,7 +140,7 @@ function createMenu (tab1, tab2, tab3) {
       enabled: false,
       click: async function () {
         createMenu('Preferences...', !overlayUnpinned ? 'Pin overlay' : 'Unpin overlay', 'Quit')
-        contextMenu.items[1].enabled = true
+        contextMenu.items[3].enabled = true
         overlayUnpinned = !overlayUnpinned
         overlay.setIgnoreMouseEvents(!overlayUnpinned)
         overlay.setFocusable(overlayUnpinned)
@@ -195,6 +212,8 @@ initialize()
 
 function createOverlay (serverId, channelId, streamingUsr) {
   if (!overlay) {
+    const primaryDisplay = screen.getPrimaryDisplay()
+    const { width, height } = primaryDisplay.size
     overlay = new BrowserWindow({
       title: 'Remedy Overlay Component',
       useContentSize: true,
@@ -205,6 +224,7 @@ function createOverlay (serverId, channelId, streamingUsr) {
       hasShadow: false,
       resizable: false,
       fullscreenable: false,
+      alwaysOnTop: true,
       transparent: true,
       webPreferences: {
         nodeIntegration: true,
@@ -212,6 +232,44 @@ function createOverlay (serverId, channelId, streamingUsr) {
         zoomFactor: 0.85,
         devTools: notPackaged
       }
+    })
+    discordAppOverlay = new BrowserWindow({
+      title: 'Discord App Overlay Component',
+      x: 0,
+      y: 0,
+      width: width,
+      height: height,
+      type: 'panel',
+      kiosk: false, // First set kiosk to false
+      frame: false,
+      roundedCorners: false,
+      hasShadow: false,
+      resizable: false,
+      fullscreenable: false,
+      vibrancy: 'fullscreen-ui',
+      show: false
+    })
+    overlay.on('close', function (e) {
+      return app.quit()
+    })
+    discordAppOverlay.on('close', function (e) {
+      e.preventDefault()
+      discordAppOverlay.setKiosk(false) // Set Kiosk to false to quit kiosk mode. This make the taskbar appear. That's why kiosk must be false at first otherwise taskbar will disappear.
+      return discordAppOverlay.hide()
+    })
+    discordAppView.webContents.executeJavaScript(fs.readFileSync(path.join(__dirname, '/discordAppCustomization.js')))
+    discordAppOverlay.addBrowserView(discordAppView)
+    discordAppOverlay.loadFile('src/components/discordApp/index.html')
+    discordAppView.setBounds({ x: Math.round((width / 2) - (1200 / 2)), y: Math.round((height / 2) - (700 / 2)), width: 1200, height: 700 })
+    globalShortcut.register('Control+`', () => {
+      if (!discordAppCurrentlyShowing && ready) {
+        discordAppOverlay.setKiosk(true) // Set Kiosk to true
+        discordAppOverlay.show()
+      } else {
+        discordAppOverlay.setKiosk(false) // Set Kiosk to false to quit kiosk mode. This make the taskbar appear. That's why kiosk must be false at first otherwise taskbar will disappear.
+        discordAppOverlay.hide()
+      }
+      discordAppCurrentlyShowing = !discordAppCurrentlyShowing
     })
     overlay.setSkipTaskbar(!darwin)
     overlay.setBounds(windowState)
@@ -265,7 +323,7 @@ function createOverlay (serverId, channelId, streamingUsr) {
         }
       }
     `)
-      contextMenu.items[1].enabled = true
+      contextMenu.items[3].enabled = true
     })
   }
 }
@@ -325,7 +383,7 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
       createOverlay(serverId, channelId, streamingUsr)
     } else {
       try {
-        contextMenu.items[1].enabled = false
+        contextMenu.items[3].enabled = false
         createMenu('Preferences...', 'Unpin overlay', 'Quit')
         const bounds = overlay.getBounds()
         storage.set('screenPosition', { windowState: bounds })
@@ -394,78 +452,65 @@ preferences.on('save', (pref) => {
 
 function loginSetup () {
   app.dock.show()
-  const prompt = new BrowserWindow({
-    title: 'Remedy login prompt',
+  const promptWrapper = new BrowserWindow({
+    title: 'Remedy login discordAppView',
     titleBarStyle: 'hidden',
-    width: 400,
-    height: 500,
+    width: 900,
+    height: 600,
     center: true,
     resizable: false,
     fullscreenable: false,
     acceptFirstMouse: true,
     show: false,
-    webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: false,
-      zoomFactor: 0.85,
-      devTools: notPackaged
-    }
+    backgroundColor: '#2B2D31'
   })
-  prompt.webContents.loadFile(path.join(__dirname, '/components/prompt/loginPrompt.html'))
-  prompt.on('close', () => {
+  if (!discordAppView) return loginSetup()
+  promptWrapper.setBrowserView(discordAppView)
+  discordAppView.setBounds({ x: 0, y: 0, width: 900, height: 600 })
+  setTimeout(() => {
+    promptWrapper.show()
+  }, 1000)
+  promptWrapper.on('close', () => {
     setTimeout(() => {
       if (!ready) {
         app.quit()
       }
     }, 1000)
   })
-  const AuthWebsocket = new DiscordAuthWebsocket()
-  AuthWebsocket.connect()
-  AuthWebsocket.on('pending', (user) => {
-    prompt.webContents.send('event', { action: 'pending', args: { avatarUrl: `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}` } })
-    console.log(user)
-  })
-  AuthWebsocket.on('ready', (_, url) => {
-    prompt.webContents.send('event', { action: 'qrRen', args: { qrCodeUrl: url } })
-    prompt.show()
-  })
-    .on('finish', (_, token) => {
-      ready = true
-      storage.set('discordToken', { token: token })
-      console.log('logged in with QR')
-      prompt.webContents.send('event', { action: 'logged', args: {} })
-      client.login(token).catch((e) => {
-        console.log('login failed')
-        console.log(e)
-        loginSetup()
+  const ses = session.defaultSession
+  ses.webRequest.onBeforeRequest((details, callback) => {
+    if (ready) return callback({})
+    // console.log(details.url)
+    if (details.url.startsWith('https://discord.com/assets/version.stable.json')) {
+      promptWrapper.hide()
+    }
+    if (details.url.startsWith('https://discord.com/api/v9/users/@me/burst-credits')) {
+      discordAppView.webContents.executeJavaScript(fs.readFileSync(path.join(__dirname, '/tokenGrabber.js'))).then((token) => {
+        promptWrapper.close()
+        if (token) {
+          storage.set('discordToken', { token })
+          ready = true
+          client.login(token).catch((e) => {
+            ready = false
+            console.log('login failed')
+            console.log(e)
+            loginSetup()
+          })
+        } else {
+          loginSetup()
+        }
       })
-    })
-  ipcMain.once('login_m_token', (_, token) => {
-    ready = true
-    storage.set('discordToken', { token })
-    prompt.webContents.send('event', { action: 'logged', args: {} })
-    client.login(token).catch((e) => {
-      console.log('login failed')
-      console.log(e)
-      loginSetup()
-    })
-  })
-  ipcMain.once('login_m_success', () => {
-    prompt.close()
+    }
+    callback({})
   })
 }
-
-storage.get('discordToken', function (error, object) {
-  if (error) throw error
-  client.login(object.token).catch((e) => {
-    console.log('login failed')
-    console.log(e)
-    loginSetup()
-  })
-})
 
 if (app.isPackaged) {
   dialog.showErrorBox = function (title, content) {
     log(`${title}\n${content}`)
   }
 }
+
+app.on('will-quit', () => {
+  globalShortcut.unregisterAll()
+})

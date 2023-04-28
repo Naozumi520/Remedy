@@ -38,3 +38,5 @@ His project has inspired me a lot.
 ### [Ganbin](https://github.com/Ganbin)
 Ganbin help fixed the issue that the adjust options are not working [#1](https://github.com/Naozumi520/Remedy/issues/1).
 
+### [Elysia](https://github.com/aiko-chan-ai)
+[aiko-chan-ai/discord.js-selfbot-v13](https://github.com/aiko-chan-ai/discord.js-selfbot-v13)
