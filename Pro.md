@@ -23,8 +23,9 @@ Download the .dmg from [release page](https://github.com/Naozumi520/Remedy/relea
 Double click "Remedy Standard" from your application list to open it. For some reasons this app is not signed yet. If you're not able to open the app, follow [this](https://support.apple.com/en-hk/guide/mac-help/mh40616/mac). If remedy run properly, you should able to see the Remedy icon appear in the menu bar.  
 
 ## 3. Log in to Remedy
-
-TBA
+<p align="center">
+  <img style='height: 50%; width: 50%;' src="src/img/login.png" />
+</p>
 
 ## 4. Test  
 Join a random channel. You should now see the overlay. Pressing control + ` should show the chat overlay.  
