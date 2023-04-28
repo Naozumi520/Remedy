@@ -19,16 +19,17 @@ Remedy comes in two editions, Standard and Pro. This app was made using the Disc
 
 | Features                                                 | Standard           | Pro                |
 | -------------------------------------------------------- | ------------------ | ------------------ |
-| Show users when someone joining the vc                   | :white_check_mark: | :white_check_mark: |
+| Show users when someone joining the VC                   | :white_check_mark: | :white_check_mark: |
 | Green border around the avatar when someone speaks       | :white_check_mark: | :white_check_mark: |
 | Show the mute/deafen status                              | :white_check_mark: | :white_check_mark: |
 | Detect which VC your in and create overlay automatically | :x:                | :white_check_mark: |
 | Group calls/ DM calls                                    | :x:                | :white_check_mark: |
 | 'Live' icon when someone is streaming                    | :x:                | :white_check_mark: |
 | Show an eye when someone is watching your stream         | :x:                | :x:                |
+| Discord chat overlay                                     | :x:                | :white_check_mark: |
 
 ## Usage
-[Standard](Standard.md) | [Pro](Pro.md)
+[Standard](Standard.md) | [Pro](Pro.md)ss
 
 ## Credit
 ### [trigg](https://github.com/trigg) / [Discover](https://github.com/trigg/Discover)
