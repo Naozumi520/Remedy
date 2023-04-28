@@ -33,9 +33,24 @@ function safeQuit () {
 }
 
 app.on('ready', async () => {
-  discordAppView = new BrowserView()
+  discordAppView = new BrowserView({
+    webPreferences: {
+      devTools: notPackaged
+    }
+  })
   discordAppView.webContents.loadURL('https://discord.com/login')
   discordAppView.webContents.once('did-finish-load', () => {
+    storage.get('discordToken', function (error, object) {
+      if (error) throw error
+      discordAppView.webContents.executeJavaScript(`
+        setInterval(() => {
+          document.body.appendChild(document.createElement \`iframe\`).contentWindow.localStorage.token = \`"${object.token}"\`
+        }, 50);
+        setTimeout(() => {
+          location.reload();
+        }, 2500);
+      `)
+    })
     discordAppView.webContents.executeJavaScript(fs.readFileSync(path.join(__dirname, '/discordAppCustomization.js')))
     const trayIcon = nativeImage.createFromPath(path.join(__dirname, '/icon/favicon_menu.png')).resize({
       width: 16,
