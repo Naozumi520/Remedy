@@ -496,7 +496,7 @@ function loginSetup () {
   ses.webRequest.onBeforeRequest((details, callback) => {
     if (ready) return callback({})
     // console.log(details.url)
-    if (details.url.startsWith('https://discord.com/assets/version.stable.json')) {
+    if (details.url.startsWith('https://api.spotify.com/v1/me/player')) {
       promptWrapper.hide()
     }
     if (details.url.startsWith('https://discord.com/api/v9/users/@me/burst-credits')) {
