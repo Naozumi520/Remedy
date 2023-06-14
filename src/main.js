@@ -63,8 +63,8 @@ app.on('ready', async () => {
       ready = true
       client.login(object.token).catch((e) => {
         ready = false
-        console.log('login failed')
-        console.log(e)
+        log('login failed')
+        log(e)
         loginSetup()
       })
     })
@@ -380,7 +380,7 @@ client.on('ready', async () => {
       if (member.voice.streaming && member.voice.streaming !== null && member.voice.streaming !== undefined) {
         streamingUsr.push({
           id: member.id,
-          name: member.nickname || member.username
+          name: member.user.globalName || member.user.username
         })
       }
     })
@@ -390,15 +390,15 @@ client.on('ready', async () => {
 
 client.on('voiceStateUpdate', async (oldState, newState) => {
   if (oldState.streaming === false && newState.streaming === true) {
-    // if (notPackaged) log((!newState.member?.nickname ? newState.user.username : newState.member?.nickname) + ' started streaming!')
+    // if (notPackaged) log((!newState.member?.globalName ? newState.user.username : newState.member?.globalName) + ' started streaming!')
     if (overlay) {
-      overlay.webContents.send('event', { action: 'stream:start', args: { user: (!newState.member?.nickname ? newState.user.username : newState.member?.nickname), userId: (!newState.member?.id ? newState.user.id : newState.member?.id) } })
+      overlay.webContents.send('event', { action: 'stream:start', args: { user: (newState.member?.user.globalName || newState.user.username), userId: (!newState.member?.id ? newState.user.id : newState.member?.id) } })
     }
   }
   if (oldState.streaming === true && newState.streaming === false) {
-    // if (notPackaged) log((!oldState.member?.nickname ? oldState.user.username : oldState.member?.nickname) + ' stopped streaming!')
+    // if (notPackaged) log((!oldState.member?.globalName ? oldState.user.username : oldState.member?.globalName) + ' stopped streaming!')
     if (overlay) {
-      overlay.webContents.send('event', { action: 'stream:stop', args: { user: (!oldState.member?.nickname ? oldState.user.username : oldState.member?.nickname), userId: (!oldState.member?.id ? oldState.user.id : oldState.member?.id) } })
+      overlay.webContents.send('event', { action: 'stream:stop', args: { user: (oldState.member?.user.globalName || oldState.user.username), userId: (!oldState.member?.id ? oldState.user.id : oldState.member?.id) } })
     }
   }
   if (newState?.user === client.user) {
@@ -412,7 +412,7 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
         if (member.voice.streaming && member.voice.streaming !== null && member.voice.streaming !== undefined) {
           streamingUsr.push({
             id: member.id,
-            name: member.nickname || member.username
+            name: member.user.globalName || member.user.username
           })
         }
       })
@@ -531,8 +531,8 @@ function loginSetup () {
           ready = true
           client.login(token).catch((e) => {
             ready = false
-            console.log('login failed')
-            console.log(e)
+            log('login failed')
+            log(e)
             loginSetup()
           })
         } else {
