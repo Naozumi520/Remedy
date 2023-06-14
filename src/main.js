@@ -10,10 +10,10 @@ const storage = require('electron-json-storage')
 const pie = require('puppeteer-in-electron')
 const puppeteer = require('puppeteer-core')
 let tray, page, discordAppOverlay, discordAppView, backService, overlay, contextMenu, aboutRMD, serverId, channelId
-let darwin = true
-let ready; let discordAppCurrentlyShowing; let overlayUnpinned = false
+let darwin, showOverlay = true
+let ready, discordAppCurrentlyShowing, overlayUnpinned = false
 
-// app.disableHardwareAcceleration() // urn off Hardware Acceleration to make the overlay smoother during gaming or video playback. This will also help make the experience smoother.
+app.disableHardwareAcceleration() // Turn off Hardware Acceleration to make the overlay smoother during gaming or video playback. This will also help make the experience smoother.
 
 const notPackaged = !app.isPackaged
 nativeTheme.themeSource = 'dark'
@@ -105,7 +105,7 @@ async function initialize () {
   await pie.initialize(app)
 }
 
-function createMenu (tab1, tab2, tab3) {
+function createMenu (tab1, tab2, tab3, tab4) {
   contextMenu = Menu.buildFromTemplate([
     {
       label: 'About Remedy...',
@@ -141,6 +141,18 @@ function createMenu (tab1, tab2, tab3) {
     { type: 'separator' },
     {
       label: tab1,
+      enabled: false,
+      accelerator: 'Control+Shift+`',
+      click: function () {
+        showOverlay = !showOverlay
+        showOverlay ? overlay.show() : overlay.hide()
+        createMenu(showOverlay ? 'Hide overlay' : 'Show overlay', 'Preferences...', overlayUnpinned ? 'Pin overlay' : 'Unpin overlay', 'Quit')
+        contextMenu.items[2].enabled = true
+        contextMenu.items[4].enabled = true
+      }
+    },
+    {
+      label: tab2,
       click: function () {
         preferences.show()
         preferences.prefsWindow?.show()
@@ -151,12 +163,13 @@ function createMenu (tab1, tab2, tab3) {
       }
     },
     {
-      label: tab2,
+      label: tab3,
       enabled: false,
       click: async function () {
-        createMenu('Preferences...', !overlayUnpinned ? 'Pin overlay' : 'Unpin overlay', 'Quit')
-        contextMenu.items[3].enabled = true
         overlayUnpinned = !overlayUnpinned
+        createMenu(showOverlay ? 'Hide overlay' : 'Show overlay', 'Preferences...', overlayUnpinned ? 'Pin overlay' : 'Unpin overlay', 'Quit')
+        contextMenu.items[2].enabled = true
+        contextMenu.items[4].enabled = true
         overlay.setIgnoreMouseEvents(!overlayUnpinned)
         overlay.setFocusable(overlayUnpinned)
         const bounds = overlay.getBounds()
@@ -166,7 +179,7 @@ function createMenu (tab1, tab2, tab3) {
     },
     { type: 'separator' },
     {
-      label: tab3,
+      label: tab4,
       click: function () {
         overlay?.webContents.insertCSS(`
         #root {
@@ -195,7 +208,7 @@ async function createWindow () {
       windowState = object.windowState
     }
   })
-  createMenu('Preferences...', 'Unpin overlay', 'Quit')
+  createMenu(showOverlay ? 'Hide overlay' : 'Show overlay', 'Preferences...', 'Unpin overlay', 'Quit')
   backService = new BrowserWindow({
     title: 'Remedy Pro Service (Discord StreamKit Overlay)',
     icon: './src/assets/icon/favicon.png',
@@ -264,9 +277,6 @@ function createOverlay (serverId, channelId, streamingUsr) {
       vibrancy: 'fullscreen-ui',
       show: false
     })
-    overlay.on('close', function (e) {
-      return app.quit()
-    })
     discordAppOverlay.on('close', function (e) {
       e.preventDefault()
       discordAppOverlay.setKiosk(false) // Set Kiosk to false to quit kiosk mode. This make the taskbar appear. That's why kiosk must be false at first otherwise taskbar will disappear.
@@ -275,7 +285,9 @@ function createOverlay (serverId, channelId, streamingUsr) {
     discordAppView.webContents.executeJavaScript(fs.readFileSync(path.join(__dirname, '/discordAppCustomization.js')))
     discordAppOverlay.addBrowserView(discordAppView)
     discordAppOverlay.loadFile('src/components/discordApp/index.html')
-    discordAppView.setBounds({ x: Math.round((width / 2) - (1200 / 2)), y: Math.round((height / 2) - (700 / 2)), width: 1200, height: 700 })
+    const screenWidth = screen.getPrimaryDisplay().size.width
+    const screenHeight = screen.getPrimaryDisplay().size.height
+    discordAppView.setBounds({ x: Math.round((screenWidth / 2) - (Math.round(screenWidth * 0.75) / 2)), y: Math.round((screenHeight / 2) - (Math.round(screenHeight * 0.75) / 2)), width: Math.round(screenWidth * 0.75), height: Math.round(screenHeight * 0.75) })
     globalShortcut.register('Control+`', () => {
       if (!discordAppCurrentlyShowing && ready) {
         discordAppOverlay.setKiosk(true) // Set Kiosk to true
@@ -286,16 +298,24 @@ function createOverlay (serverId, channelId, streamingUsr) {
       }
       discordAppCurrentlyShowing = !discordAppCurrentlyShowing
     })
+    globalShortcut.register('Control+shift+`', () => {
+      showOverlay = !showOverlay
+      showOverlay ? overlay.show() : overlay.hide()
+      createMenu(showOverlay ? 'Hide overlay' : 'Show overlay', 'Preferences...', overlayUnpinned ? 'Pin overlay' : 'Unpin overlay', 'Quit')
+      contextMenu.items[2].enabled = true
+      contextMenu.items[4].enabled = true
+    })
     overlay.setSkipTaskbar(!darwin)
     overlay.setBounds(windowState)
     overlay.setIgnoreMouseEvents(true)
     overlay.setFocusable(false)
     overlay.webContents.setZoomFactor(90)
-    const url = `https://streamkit.discord.com/overlay/voice/${serverId}/${channelId}?icon=true&online=true&logo=white&text_color=${preferences.preferences.Interface.txt_color.replace('#', '%23')}&text_size=${preferences.preferences.Interface.txt_size}&text_outline_color=${preferences.preferences.Interface.txt_outline_color.replace('#', '%23')}&text_outline_size=${preferences.preferences.Interface.txt_outline_size}&text_shadow_color=${preferences.preferences.Interface.txt_shadow_color.replace('#', '%23')}&text_shadow_size=${preferences.preferences.Interface.txt_shadow_size}&bg_color=${preferences.preferences.Interface.bg_color.replace('#', '%23')}&bg_opacity=${parseFloat(preferences.preferences.Interface.opacity) / 100}&bg_shadow_color=${preferences.preferences.Interface.bg_shadow_color.replace('#', '%23')}&bg_shadow_size=${preferences.preferences.Interface.bg_shadow_size}&invite_code=&limit_speaking=${preferences.preferences.Interface.general.includes('users_only')}&small_avatars=${preferences.preferences.Interface.general.includes('small_avt')}&hide_names=${preferences.preferences.Interface.general.includes('hide_nick')}&fade_chat=0`
+    const url = `https://streamkit.discord.com/overlay/voice/${serverId}/${channelId}?icon=true&online=true&logo=white&text_color=${preferences.preferences.Interface.txt_color.replace('#', '%23')}&text_size=${preferences.preferences.Interface.txt_size}&text_outline_color=${preferences.preferences.Interface.txt_outline_color.replace('#', '%23')}&text_outline_size=${preferences.preferences.Interface.txt_outline_size}&text_shadow_color=${preferences.preferences.Interface.txt_shadow_color.replace('#', '%23')}&text_shadow_size=${preferences.preferences.Interface.txt_shadow_size}&bg_color=${preferences.preferences.Interface.bg_color.replace('#', '%23')}&bg_opacity=${parseFloat(preferences.preferences.Interface.opacity) / 100}&bg_shadow_color=${preferences.preferences.Interface.bg_shadow_color.replace('#', '%23')}&bg_shadow_size=${preferences.preferences.Interface.bg_shadow_size}&invite_code=&limit_speaking=${preferences.preferences.Interface.general.includes('users_only')}&small_avatars=${preferences.preferences.Interface.general.includes('small_avt')}&hide_names=false&fade_chat=0`
     overlay.loadURL(url.replaceAll('true', 'True'))
     overlay.webContents.on('did-finish-load', () => {
       overlay.webContents.executeJavaScript(fs.readFileSync(path.join(__dirname, '/overlayInjectScript.js')))
       ipcMain.once('scriptReady', (_, msg) => {
+        overlay.webContents.send('event', { action: 'pref:changes', args: preferences.preferences })
         if (streamingUsr && streamingUsr !== null && streamingUsr !== undefined) {
           for (let i = 0; i < streamingUsr.length; i++) {
             const member = streamingUsr[i]
@@ -338,7 +358,8 @@ function createOverlay (serverId, channelId, streamingUsr) {
         }
       }
     `)
-      contextMenu.items[3].enabled = true
+      contextMenu.items[2].enabled = true
+      contextMenu.items[4].enabled = true
     })
   }
 }
@@ -398,8 +419,9 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
       createOverlay(serverId, channelId, streamingUsr)
     } else {
       try {
-        contextMenu.items[3].enabled = false
-        createMenu('Preferences...', 'Unpin overlay', 'Quit')
+        contextMenu.items[2].enabled = false
+        contextMenu.items[4].enabled = false
+        createMenu(showOverlay ? 'Hide overlay' : 'Show overlay', 'Preferences...', 'Show overlay', 'Unpin overlay', 'Quit')
         const bounds = overlay.getBounds()
         storage.set('screenPosition', { windowState: bounds })
         windowState = bounds
@@ -407,19 +429,21 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
       } catch (e) {
         // log(e, 'voiceStateUpdate')
       }
-      overlay = undefined
+      overlay = null
     }
   }
 })
 
 preferences.on('save', (pref) => {
   if (overlay) {
-    const url = `https://streamkit.discord.com/overlay/voice/${serverId}/${channelId}?icon=true&online=true&logo=white&text_color=${preferences.preferences.Interface.txt_color.replace('#', '%23')}&text_size=${preferences.preferences.Interface.txt_size}&text_outline_color=${preferences.preferences.Interface.txt_outline_color.replace('#', '%23')}&text_outline_size=${preferences.preferences.Interface.txt_outline_size}&text_shadow_color=${preferences.preferences.Interface.txt_shadow_color.replace('#', '%23')}&text_shadow_size=${preferences.preferences.Interface.txt_shadow_size}&bg_color=${preferences.preferences.Interface.bg_color.replace('#', '%23')}&bg_opacity=${parseFloat(preferences.preferences.Interface.opacity) / 100}&bg_shadow_color=${preferences.preferences.Interface.bg_shadow_color.replace('#', '%23')}&bg_shadow_size=${preferences.preferences.Interface.bg_shadow_size}&invite_code=&limit_speaking=${preferences.preferences.Interface.general.includes('users_only')}&small_avatars=${preferences.preferences.Interface.general.includes('small_avt')}&hide_names=${preferences.preferences.Interface.general.includes('hide_nick')}&fade_chat=0`.replaceAll('true', 'True')
+    const url = `https://streamkit.discord.com/overlay/voice/${serverId}/${channelId}?icon=true&online=true&logo=white&text_color=${preferences.preferences.Interface.txt_color.replace('#', '%23')}&text_size=${preferences.preferences.Interface.txt_size}&text_outline_color=${preferences.preferences.Interface.txt_outline_color.replace('#', '%23')}&text_outline_size=${preferences.preferences.Interface.txt_outline_size}&text_shadow_color=${preferences.preferences.Interface.txt_shadow_color.replace('#', '%23')}&text_shadow_size=${preferences.preferences.Interface.txt_shadow_size}&bg_color=${preferences.preferences.Interface.bg_color.replace('#', '%23')}&bg_opacity=${parseFloat(preferences.preferences.Interface.opacity) / 100}&bg_shadow_color=${preferences.preferences.Interface.bg_shadow_color.replace('#', '%23')}&bg_shadow_size=${preferences.preferences.Interface.bg_shadow_size}&invite_code=&limit_speaking=${preferences.preferences.Interface.general.includes('users_only')}&small_avatars=${preferences.preferences.Interface.general.includes('small_avt')}&hide_names=false&fade_chat=0`.replaceAll('true', 'True')
     overlay.loadURL(url)
     overlay.webContents.on('did-finish-load', () => {
       overlay.webContents.executeJavaScript(fs.readFileSync(path.join(__dirname, '/overlayInjectScript.js')))
-      log('Overlay loaded', 'voiceStateUpdate')
-      overlay.webContents.insertCSS(`
+      ipcMain.once('scriptReady', (_, msg) => {
+        overlay.webContents.send('event', { action: 'pref:changes', args: preferences.preferences })
+        log('Overlay loaded', 'voiceStateUpdate')
+        overlay.webContents.insertCSS(`
       * {
       overflow: none !important;
       }
@@ -452,6 +476,7 @@ preferences.on('save', (pref) => {
         }
       }
     `)
+      })
     })
   }
   if (pref?.Interface.remedy_opt.includes('start_at_login')) {

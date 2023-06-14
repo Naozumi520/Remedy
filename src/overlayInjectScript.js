@@ -24,6 +24,7 @@ const liveicon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 27.02 12.
 </svg>`
 window.consoleCatchers = []
 let spans, text, uState
+let pref
 let streamingUsr = []
 
 console.log = function (text, input) {
@@ -38,7 +39,7 @@ console.log = function (text, input) {
       const element = document.getElementsByClassName(spans[0].className)[i].parentElement
       const imgSrc = element.parentElement.getElementsByTagName('img')[0].src
       if (imgSrc.match(/\d{18}/g)[0] === id) {
-        text = name
+        text = pref?.Interface?.general?.includes('hide_nick') ? '' : name
         if (uState.self_mute || uState.mute) {
           text += muteicon
         }
@@ -52,6 +53,11 @@ console.log = function (text, input) {
           spans[i].parentElement.style.paddingTop = '18px'
         }
         spans[i].innerHTML = text
+        if (pref?.Interface?.general?.includes('hide_nick')) {
+          spans[i].style.paddingRight = '8px'
+        } else {
+          spans[i].style.paddingRight = '4px'
+        }
       }
     }
   }
@@ -69,6 +75,10 @@ ipcRenderer.on('event', (_, msg) => {
       streamingUsr = streamingUsr.filter(id => id !== args.userId)
       break
     }
+    case 'pref:changes': {
+      pref = args
+      break
+    }
   }
   function waitElementAppear () {
     spans = document.getElementsByTagName('span')
@@ -81,7 +91,7 @@ ipcRenderer.on('event', (_, msg) => {
         const element = document.getElementsByClassName(spans[0].className)[i].parentElement
         const imgSrc = element.parentElement.getElementsByTagName('img')[0].src
         if (imgSrc.match(/\d{18}/g)[0] === args.userId) {
-          text = args.user
+          text = pref?.Interface?.general?.includes('hide_nick') ? '' : args.user
           if (uState?.self_mute || uState?.mute) {
             text += muteicon
           }
@@ -95,6 +105,11 @@ ipcRenderer.on('event', (_, msg) => {
             spans[i].parentElement.style.paddingTop = '18px'
           }
           spans[i].innerHTML = text
+          if (pref?.Interface?.general?.includes('hide_nick')) {
+            spans[i].style.paddingRight = '8px'
+          } else {
+            spans[i].style.paddingRight = '4px'
+          }
         }
       }
     }
