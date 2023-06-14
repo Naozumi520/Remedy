@@ -419,13 +419,12 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
       createOverlay(serverId, channelId, streamingUsr)
     } else {
       try {
-        contextMenu.items[2].enabled = false
-        contextMenu.items[4].enabled = false
-        createMenu(showOverlay ? 'Hide overlay' : 'Show overlay', 'Preferences...', 'Show overlay', 'Unpin overlay', 'Quit')
         const bounds = overlay.getBounds()
         storage.set('screenPosition', { windowState: bounds })
         windowState = bounds
         overlay?.close()
+        contextMenu.items[2].enabled = false
+        contextMenu.items[4].enabled = false
       } catch (e) {
         // log(e, 'voiceStateUpdate')
       }
