@@ -4,8 +4,8 @@
   "description": "Unofficial Discord overlay support for MacOS",
   "main": "src/main.js",
   "scripts": {
-    "pack": "electron-builder --mac",
-    "pack:win": "electron-builder --win"
+    "pack": "sudo electron-builder --mac",
+    "pack:win": "sudo electron-builder --win"
   },
   "build": {
     "productName": "Remedy Pro",

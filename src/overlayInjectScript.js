@@ -55,8 +55,14 @@ console.log = function (text, input) {
         spans[i].innerHTML = text
         if (pref?.Interface?.general?.includes('hide_nick')) {
           spans[i].style.paddingRight = '8px'
+          if (!uState.self_mute && !uState.mute && !uState.self_deaf && !uState.deaf) {
+            spans[i].style.display = 'none'
+          } else {
+            spans[i].style.display = 'inline'
+          }
         } else {
           spans[i].style.paddingRight = '4px'
+          spans[i].style.display = 'inline'
         }
       }
     }
@@ -107,8 +113,14 @@ ipcRenderer.on('event', (_, msg) => {
           spans[i].innerHTML = text
           if (pref?.Interface?.general?.includes('hide_nick')) {
             spans[i].style.paddingRight = '8px'
+            if (!uState.self_mute && !uState.mute && !uState.self_deaf && !uState.deaf) {
+              spans[i].style.display = 'none'
+            } else {
+              spans[i].style.display = 'inline'
+            }
           } else {
             spans[i].style.paddingRight = '4px'
+            spans[i].style.display = 'inline'
           }
         }
       }

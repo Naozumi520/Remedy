@@ -67,7 +67,6 @@ app.on('ready', async () => {
       ready = true
       client.login(object.token).catch((e) => {
         ready = false
-        log('login failed')
         log(e.toString())
         loginSetup()
       })
@@ -265,12 +264,18 @@ function createOverlay (serverId, channelId, streamingUsr) {
         devTools: notPackaged
       }
     })
+    /*
+    Pure kiosk mode without menu bar, three conditions:
+    - type set to panel (overlap on fullscreen application)
+    - Kiosk set to false when startup
+    - trigger setAlwaysOnTop to true and screen-saver when showing overlay (overlap on the menu bar)
+    */
     discordAppOverlay = new BrowserWindow({
       title: 'Discord App Overlay Component',
       x: 0,
       y: 0,
-      width: width,
-      height: height,
+      width,
+      height,
       type: 'panel',
       kiosk: false, // First set kiosk to false
       frame: false,
@@ -284,6 +289,7 @@ function createOverlay (serverId, channelId, streamingUsr) {
     discordAppOverlay.on('close', function (e) {
       e.preventDefault()
       discordAppOverlay.setKiosk(false) // Set Kiosk to false to quit kiosk mode. This make the taskbar appear. That's why kiosk must be false at first otherwise taskbar will disappear.
+      discordAppOverlay.setAlwaysOnTop(false)
       return discordAppOverlay.hide()
     })
     discordAppView.webContents.executeJavaScript(fs.readFileSync(path.join(__dirname, '/discordAppCustomization.js')))
@@ -294,13 +300,16 @@ function createOverlay (serverId, channelId, streamingUsr) {
     discordAppView.setBounds({ x: Math.round((screenWidth / 2) - (Math.round(screenWidth * 0.75) / 2)), y: Math.round((screenHeight / 2) - (Math.round(screenHeight * 0.75) / 2)), width: Math.round(screenWidth * 0.75), height: Math.round(screenHeight * 0.75) })
     globalShortcut.register('Control+`', () => {
       if (!discordAppCurrentlyShowing && ready) {
+        discordAppCurrentlyShowing = true
         discordAppOverlay.setKiosk(true) // Set Kiosk to true
+        discordAppOverlay.setAlwaysOnTop(true, 'screen-saver')
         discordAppOverlay.show()
       } else {
+        discordAppCurrentlyShowing = false
         discordAppOverlay.setKiosk(false) // Set Kiosk to false to quit kiosk mode. This make the taskbar appear. That's why kiosk must be false at first otherwise taskbar will disappear.
+        discordAppOverlay.setAlwaysOnTop(false)
         discordAppOverlay.hide()
       }
-      discordAppCurrentlyShowing = !discordAppCurrentlyShowing
     })
     globalShortcut.register('Control+shift+`', () => {
       showOverlay = !showOverlay
@@ -535,8 +544,7 @@ function loginSetup () {
           ready = true
           client.login(token).catch((e) => {
             ready = false
-            log('login failed')
-            log(e)
+            log(e.toString())
             loginSetup()
           })
         } else {
