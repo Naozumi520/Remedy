@@ -40,17 +40,17 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "discord.js-selfbot-v13": "^2.14.5",
-    "electron-json-storage": "^4.5.0",
-    "electron-preferences": "^2.6.0",
-    "puppeteer-core": "^13.5.1",
+    "discord.js-selfbot-v13": "^2.14.9",
+    "electron-json-storage": "^4.6.0",
+    "electron-preferences": "^2.8.2",
+    "puppeteer-core": "^21.0.2",
     "puppeteer-in-electron": "^3.0.5",
-    "swup": "^2.0.19"
+    "swup": "^4.2.0"
   },
   "devDependencies": {
-    "electron": "^23.1.1",
-    "electron-builder": "^23.6.0",
+    "electron": "^25.5.0",
+    "electron-builder": "^24.6.3",
     "modclean": "^3.0.0-beta.1",
-    "standard": "^16.0.4"
+    "standard": "^17.1.0"
   }
 }

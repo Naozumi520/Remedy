@@ -24,7 +24,11 @@ let windowState = {
 }
 
 function log (message, type) {
-  message.split('\n').forEach(line => console.log(`Remedy Pro [${type || 'info'}]: ${line}`))
+  try {
+    message.split('\n').forEach(line => console.log(`Remedy Pro [${type || 'info'}]: ${line}`))
+  } catch (e) {
+    console.log(message)
+  }
 };
 
 function safeQuit () {
@@ -64,7 +68,7 @@ app.on('ready', async () => {
       client.login(object.token).catch((e) => {
         ready = false
         log('login failed')
-        log(e)
+        log(e.toString())
         loginSetup()
       })
     })
