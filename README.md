@@ -41,3 +41,6 @@ Ganbin help fixed the issue that the adjust options are not working [#1](https:/
 
 ### [Elysia](https://github.com/aiko-chan-ai)
 [aiko-chan-ai/discord.js-selfbot-v13](https://github.com/aiko-chan-ai/discord.js-selfbot-v13)
+
+### [ChinHongTan](https://github.com/ChinHongTan)
+ChinHongTan, one of the core developers, helps in addressing code issues and improving code quality.
