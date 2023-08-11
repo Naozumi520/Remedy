@@ -44,7 +44,7 @@ app.on('ready', async () => {
   })
   discordAppView.webContents.loadURL('https://discord.com/login')
   discordAppView.webContents.once('did-finish-load', () => {
-    storage.get('discordToken', function (error, object) {
+    storage.get('discordToken', (error, object) => {
       if (error) throw error
       discordAppView.webContents.executeJavaScript(`
         setInterval(() => {
@@ -62,7 +62,7 @@ app.on('ready', async () => {
     })
     trayIcon.setTemplateImage(true)
     tray = new Tray(trayIcon)
-    storage.get('discordToken', function (error, object) {
+    storage.get('discordToken', (error, object) => {
       if (error) throw error
       ready = true
       client.login(object.token).catch((e) => {
@@ -73,7 +73,7 @@ app.on('ready', async () => {
     })
     createWindow()
     if (app.getAppPath().startsWith('/Applications') || app.isPackaged === false) return
-    storage.get('dialogonceshown', async function (error, bool) {
+    storage.get('dialogonceshown', async (error, bool) => {
       if (!Object.keys(bool).length === 0 && bool === true) return
       if (error) throw error
       const dialogFocusMethod = new BrowserWindow()
@@ -92,9 +92,7 @@ app.on('ready', async () => {
       });
       storage.set('dialogonceshown', result.checkboxChecked)
       if (result.response !== 0) return
-      if (result.response === 0) {
-        app.moveToApplicationsFolder()
-      }
+      app.moveToApplicationsFolder()
     })
   })
 })
@@ -110,31 +108,30 @@ function createMenu (tab1, tab2, tab3, tab4) {
       label: 'About Remedy...',
       click: function () {
         aboutRMD?.show()
-        if (!aboutRMD) {
-          aboutRMD = new BrowserWindow({
-            title: 'Remedy Pro',
-            titleBarStyle: 'hiddenInset',
-            width: 285,
-            height: 167,
-            resizable: false,
-            fullscreenable: false,
-            hasShadow: false,
-            webPreferences: {
-              nodeIntegration: true,
-              contextIsolation: false,
-              zoomFactor: 0.85,
-              devTools: notPackaged
-            }
-          })
-          aboutRMD.webContents.loadFile(path.join(__dirname, '/components/about/index.html'))
-          aboutRMD.webContents.on('will-navigate', function (e, url) {
-            e.preventDefault()
-            shell.openExternal(url)
-          })
-          aboutRMD.on('closed', function () {
-            aboutRMD = null
-          })
-        }
+        if (aboutRMD) return
+        aboutRMD = new BrowserWindow({
+          title: 'Remedy Pro',
+          titleBarStyle: 'hiddenInset',
+          width: 285,
+          height: 167,
+          resizable: false,
+          fullscreenable: false,
+          hasShadow: false,
+          webPreferences: {
+            nodeIntegration: true,
+            contextIsolation: false,
+            zoomFactor: 0.85,
+            devTools: notPackaged
+          }
+        })
+        aboutRMD.webContents.loadFile(path.join(__dirname, '/components/about/index.html'))
+        aboutRMD.webContents.on('will-navigate', (e, url) => {
+          e.preventDefault()
+          shell.openExternal(url)
+        })
+        aboutRMD.on('closed', () => {
+          aboutRMD = null
+        })
       }
     },
     { type: 'separator' },
@@ -142,7 +139,7 @@ function createMenu (tab1, tab2, tab3, tab4) {
       label: tab1,
       enabled: false,
       accelerator: 'Control+Shift+`',
-      click: function () {
+      click: () => {
         showOverlay = !showOverlay
         showOverlay ? overlay.show() : overlay.hide()
         createMenu(showOverlay ? 'Hide overlay' : 'Show overlay', 'Preferences...', overlayUnpinned ? 'Pin overlay' : 'Unpin overlay', 'Quit')
@@ -152,7 +149,7 @@ function createMenu (tab1, tab2, tab3, tab4) {
     },
     {
       label: tab2,
-      click: function () {
+      click: () => {
         preferences.show()
         preferences.prefsWindow?.show()
         preferences.prefsWindow.once('closed', () => {
@@ -164,7 +161,7 @@ function createMenu (tab1, tab2, tab3, tab4) {
     {
       label: tab3,
       enabled: false,
-      click: async function () {
+      click: async () => {
         overlayUnpinned = !overlayUnpinned
         createMenu(showOverlay ? 'Hide overlay' : 'Show overlay', 'Preferences...', overlayUnpinned ? 'Pin overlay' : 'Unpin overlay', 'Quit')
         contextMenu.items[2].enabled = true
@@ -179,7 +176,7 @@ function createMenu (tab1, tab2, tab3, tab4) {
     { type: 'separator' },
     {
       label: tab4,
-      click: function () {
+      click: () => {
         overlay?.webContents.insertCSS(`
         #root {
           animation-name: disappear;
@@ -200,7 +197,7 @@ function createMenu (tab1, tab2, tab3, tab4) {
 
 async function createWindow () {
   log('Creating window...', 'client')
-  storage.get('screenPosition', function (error, object) {
+  storage.get('screenPosition', (error, object) => {
     if (error) throw error
     if (object.windowState) {
       log('Restoring overlay position...', 'client')
@@ -282,7 +279,7 @@ function createOverlay (serverId, channelId, streamingUsr) {
       vibrancy: 'fullscreen-ui',
       show: false
     })
-    discordAppOverlay.on('close', function (e) {
+    discordAppOverlay.on('close', (e) => {
       e.preventDefault()
       discordAppOverlay.setKiosk(false) // Set Kiosk to false to quit kiosk mode. This make the taskbar appear. That's why kiosk must be false at first otherwise taskbar will disappear.
       discordAppOverlay.setAlwaysOnTop(false)
@@ -376,11 +373,8 @@ function createOverlay (serverId, channelId, streamingUsr) {
 
 client.on('ready', async () => {
   log(`logged in with account ${client.user.username}.`)
-  if (process.platform === 'darwin') {
-    app.dock.hide()
-  } else {
-    darwin = false
-  }
+  if (process.platform !== 'darwin') darwin = false
+  app.dock.hide()
   if (client.user.voice.channel !== null && client.user.voice.channelId !== null) {
     serverId = client.user.voice.channel.guildId
     channelId = client.user.voice.channelId
@@ -399,105 +393,98 @@ client.on('ready', async () => {
 })
 
 client.on('voiceStateUpdate', async (oldState, newState) => {
-  if (oldState.streaming === false && newState.streaming === true) {
+  // we only need to check newState, oldState is not needed
+  if (newState.streaming === true && overlay) {
+    overlay.webContents.send('event', { action: 'stream:start', args: { user: (newState.member?.user.globalName || newState.user.username), userId: (!newState.member?.id ? newState.user.id : newState.member?.id) } })
     // if (notPackaged) log((!newState.member?.globalName ? newState.user.username : newState.member?.globalName) + ' started streaming!')
-    if (overlay) {
-      overlay.webContents.send('event', { action: 'stream:start', args: { user: (newState.member?.user.globalName || newState.user.username), userId: (!newState.member?.id ? newState.user.id : newState.member?.id) } })
-    }
   }
-  if (oldState.streaming === true && newState.streaming === false) {
+  if (newState.streaming === false && overlay) {
+    overlay.webContents.send('event', { action: 'stream:stop', args: { user: (oldState.member?.user.globalName || oldState.user.username), userId: (!oldState.member?.id ? oldState.user.id : oldState.member?.id) } })
     // if (notPackaged) log((!oldState.member?.globalName ? oldState.user.username : oldState.member?.globalName) + ' stopped streaming!')
-    if (overlay) {
-      overlay.webContents.send('event', { action: 'stream:stop', args: { user: (oldState.member?.user.globalName || oldState.user.username), userId: (!oldState.member?.id ? oldState.user.id : oldState.member?.id) } })
-    }
   }
-  if (newState?.user === client.user) {
-    if (oldState.channelId === newState.channelId) return
-    if (!oldState.channelId) {
-      serverId = newState.guild.id
-      channelId = newState.channelId
-      // log(`User joined voice channel:\nServer ID: ${serverId}\nChannel ID: ${channelId}`, 'voiceStateUpdate')
-      const streamingUsr = []
-      client.user.voice.channel.members.forEach(member => {
-        if (member.voice.streaming && member.voice.streaming !== null && member.voice.streaming !== undefined) {
-          streamingUsr.push({
-            id: member.id,
-            name: member.user.globalName || member.user.username
-          })
-        }
+  if (newState?.user !== client.user) return
+  if (oldState.channelId === newState.channelId) return
+  if (oldState.channelId) {
+    try {
+      const bounds = overlay.getBounds()
+      storage.set('screenPosition', { windowState: bounds })
+      windowState = bounds
+      overlay?.close()
+      contextMenu.items[2].enabled = false
+      contextMenu.items[4].enabled = false
+    } catch (e) {
+      // log(e, 'voiceStateUpdate')
+    }
+    overlay = null
+  }
+  serverId = newState.guild.id
+  channelId = newState.channelId
+  // log(`User joined voice channel:\nServer ID: ${serverId}\nChannel ID: ${channelId}`, 'voiceStateUpdate')
+  const streamingUsr = []
+  client.user.voice.channel.members.forEach(member => {
+    if (member.voice.streaming) {
+      streamingUsr.push({
+        id: member.id,
+        name: member.user.globalName || member.user.username
       })
-      createOverlay(serverId, channelId, streamingUsr)
-    } else {
-      try {
-        const bounds = overlay.getBounds()
-        storage.set('screenPosition', { windowState: bounds })
-        windowState = bounds
-        overlay?.close()
-        contextMenu.items[2].enabled = false
-        contextMenu.items[4].enabled = false
-      } catch (e) {
-        // log(e, 'voiceStateUpdate')
-      }
-      overlay = null
     }
-  }
+  })
+  createOverlay(serverId, channelId, streamingUsr)
 })
 
 preferences.on('save', (pref) => {
-  if (overlay) {
-    const url = `https://streamkit.discord.com/overlay/voice/${serverId}/${channelId}?icon=true&online=true&logo=white&text_color=${preferences.preferences.Interface.txt_color.replace('#', '%23')}&text_size=${preferences.preferences.Interface.txt_size}&text_outline_color=${preferences.preferences.Interface.txt_outline_color.replace('#', '%23')}&text_outline_size=${preferences.preferences.Interface.txt_outline_size}&text_shadow_color=${preferences.preferences.Interface.txt_shadow_color.replace('#', '%23')}&text_shadow_size=${preferences.preferences.Interface.txt_shadow_size}&bg_color=${preferences.preferences.Interface.bg_color.replace('#', '%23')}&bg_opacity=${parseFloat(preferences.preferences.Interface.opacity) / 100}&bg_shadow_color=${preferences.preferences.Interface.bg_shadow_color.replace('#', '%23')}&bg_shadow_size=${preferences.preferences.Interface.bg_shadow_size}&invite_code=&limit_speaking=${preferences.preferences.Interface.general.includes('users_only')}&small_avatars=${preferences.preferences.Interface.general.includes('small_avt')}&hide_names=false&fade_chat=0`.replaceAll('true', 'True')
-    overlay.loadURL(url)
-    overlay.webContents.on('did-finish-load', () => {
-      overlay.webContents.executeJavaScript(fs.readFileSync(path.join(__dirname, '/overlayInjectScript.js')))
-      ipcMain.once('scriptReady', (_, msg) => {
-        overlay.webContents.send('event', { action: 'pref:changes', args: preferences.preferences })
-        log('Overlay loaded', 'voiceStateUpdate')
-        overlay.webContents.insertCSS(`
-      * {
-      overflow: none !important;
-      }
-      #root {
-        -webkit-app-region: drag;
-        user-select: none;
-        pointer-events: none;
-        margin-top: -12px !important;
-        zoom: ${preferences.preferences.Interface.scale};
-      }
-      img[class^="Voice_avatar"] {
-        opacity: ${parseFloat(preferences.preferences.Interface.opacity) / 100};
-      }
-      @keyframes disappear {
-        0% {
-          opacity: 1;
-          transform-origin: center;
+  if (!overlay) return
+  const url = `https://streamkit.discord.com/overlay/voice/${serverId}/${channelId}?icon=true&online=true&logo=white&text_color=${preferences.preferences.Interface.txt_color.replace('#', '%23')}&text_size=${preferences.preferences.Interface.txt_size}&text_outline_color=${preferences.preferences.Interface.txt_outline_color.replace('#', '%23')}&text_outline_size=${preferences.preferences.Interface.txt_outline_size}&text_shadow_color=${preferences.preferences.Interface.txt_shadow_color.replace('#', '%23')}&text_shadow_size=${preferences.preferences.Interface.txt_shadow_size}&bg_color=${preferences.preferences.Interface.bg_color.replace('#', '%23')}&bg_opacity=${parseFloat(preferences.preferences.Interface.opacity) / 100}&bg_shadow_color=${preferences.preferences.Interface.bg_shadow_color.replace('#', '%23')}&bg_shadow_size=${preferences.preferences.Interface.bg_shadow_size}&invite_code=&limit_speaking=${preferences.preferences.Interface.general.includes('users_only')}&small_avatars=${preferences.preferences.Interface.general.includes('small_avt')}&hide_names=false&fade_chat=0`.replaceAll('true', 'True')
+  overlay.loadURL(url)
+  overlay.webContents.on('did-finish-load', () => {
+    overlay.webContents.executeJavaScript(fs.readFileSync(path.join(__dirname, '/overlayInjectScript.js')))
+    ipcMain.once('scriptReady', (_, msg) => {
+      overlay.webContents.send('event', { action: 'pref:changes', args: preferences.preferences })
+      log('Overlay loaded', 'voiceStateUpdate')
+      overlay.webContents.insertCSS(`
+        * {
+        overflow: none !important;
         }
-
-        20% {
-          opacity: 0.2;
-          transform: translateX(-30rem);
-          transform-origin: center;
+        #root {
+          -webkit-app-region: drag;
+          user-select: none;
+          pointer-events: none;
+          margin-top: -12px !important;
+          zoom: ${preferences.preferences.Interface.scale};
         }
-
-        100% {
-            display: none;
-            opacity: 0;
-            transform: translateX(-60rem);
+        img[class^="Voice_avatar"] {
+          opacity: ${parseFloat(preferences.preferences.Interface.opacity) / 100};
+        }
+        @keyframes disappear {
+          0% {
+            opacity: 1;
             transform-origin: center;
+          }
+
+          20% {
+            opacity: 0.2;
+            transform: translateX(-30rem);
+            transform-origin: center;
+          }
+
+          100% {
+              display: none;
+              opacity: 0;
+              transform: translateX(-60rem);
+              transform-origin: center;
+          }
         }
-      }
-    `)
-      })
+      `)
     })
-  }
-  if (pref?.Interface.remedy_opt.includes('start_at_login')) {
-    app.setLoginItemSettings({
-      openAtLogin: true
-    })
-  } else {
+  })
+  if (!pref?.Interface.remedy_opt.includes('start_at_login')) {
     app.setLoginItemSettings({
       openAtLogin: false
     })
   }
+  app.setLoginItemSettings({
+    openAtLogin: true
+  })
 })
 
 function loginSetup () {
@@ -528,34 +515,29 @@ function loginSetup () {
     }, 1000)
   })
   const ses = session.defaultSession
-  ses.webRequest.onBeforeRequest((details, callback) => {
+  ses.webRequest.onBeforeRequest(async (details, callback) => {
     if (ready) return callback({})
     // console.log(details.url)
     if (details.url.startsWith('https://api.spotify.com/v1/me/player')) {
       promptWrapper.hide()
     }
-    if (details.url.startsWith('https://discord.com/api/v9/users/@me/burst-credits')) {
-      discordAppView.webContents.executeJavaScript(fs.readFileSync(path.join(__dirname, '/tokenGrabber.js'))).then((token) => {
-        promptWrapper.close()
-        if (token) {
-          storage.set('discordToken', { token })
-          ready = true
-          client.login(token).catch((e) => {
-            ready = false
-            log(e.toString())
-            loginSetup()
-          })
-        } else {
-          loginSetup()
-        }
-      })
-    }
+    if (!details.url.startsWith('https://discord.com/api/v9/users/@me/burst-credits')) return
+    let token = await discordAppView.webContents.executeJavaScript(fs.readFileSync(path.join(__dirname, '/tokenGrabber.js')))
+    promptWrapper.close()
+    if (!token) loginSetup()
+    storage.set('discordToken', { token })
+    ready = true
+    client.login(token).catch((e) => {
+      ready = false
+      log(e.toString())
+      loginSetup()
+    })
     callback({})
   })
 }
 
 if (app.isPackaged) {
-  dialog.showErrorBox = function (title, content) {
+  dialog.showErrorBox = (title, content) => {
     log(`${title}\n${content}`)
   }
 }
