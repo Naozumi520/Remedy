@@ -93,7 +93,7 @@ const preferences = new ElectronPreferences({
               {
                 label: 'Overlay scale',
                 key: 'scale',
-                type: 'number',
+                type: 'number'
               },
               {
                 label: 'TEXT Size',

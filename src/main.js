@@ -78,7 +78,7 @@ app.on('ready', async () => {
       if (error) throw error
       const dialogFocusMethod = new BrowserWindow()
       dialogFocusMethod.destroy()// MessageBox is not focus by default, creating a browserWindow and immediately destroy.
-      let result = await dialog.showMessageBox({
+      const result = await dialog.showMessageBox({
         type: 'question',
         message: 'Move to the Application folder?',
         detail: 'Some features may require you to move Remedy to the Applications folder in order to work properly.',
@@ -89,7 +89,7 @@ app.on('ready', async () => {
         cancelId: 1,
         checkboxLabel: 'Don\'t ask again',
         checkboxChecked: true
-      });
+      })
       storage.set('dialogonceshown', result.checkboxChecked)
       if (result.response !== 0) return
       app.moveToApplicationsFolder()
@@ -477,13 +477,8 @@ preferences.on('save', (pref) => {
       `)
     })
   })
-  if (!pref?.Interface.remedy_opt.includes('start_at_login')) {
-    app.setLoginItemSettings({
-      openAtLogin: false
-    })
-  }
   app.setLoginItemSettings({
-    openAtLogin: true
+    openAtLogin: pref?.Interface.remedy_opt.includes('start_at_login')
   })
 })
 
@@ -522,7 +517,7 @@ function loginSetup () {
       promptWrapper.hide()
     }
     if (!details.url.startsWith('https://discord.com/api/v9/users/@me/burst-credits')) return
-    let token = await discordAppView.webContents.executeJavaScript(fs.readFileSync(path.join(__dirname, '/tokenGrabber.js')))
+    const token = await discordAppView.webContents.executeJavaScript(fs.readFileSync(path.join(__dirname, '/tokenGrabber.js')))
     promptWrapper.close()
     if (!token) loginSetup()
     storage.set('discordToken', { token })
