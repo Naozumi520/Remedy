@@ -422,7 +422,7 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
   // log(`User joined voice channel:\nServer ID: ${serverId}\nChannel ID: ${channelId}`, 'voiceStateUpdate')
   const streamingUsr = []
   client.user.voice.channel.members.forEach(member => {
-    if (member.voice.streaming) {  // ========= dk if this change crash stuff please remove after check ================
+    if (member.voice.streaming) {
       streamingUsr.push({
         id: member.id,
         name: member.user.globalName || member.user.username
