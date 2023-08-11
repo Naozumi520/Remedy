@@ -2,6 +2,10 @@ body {
     background: rgb(45, 46, 48);
 }
 
+.key-scale {
+    width: 100px !important;
+}
+
 .sidebar {
     display: none;
 }

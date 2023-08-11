@@ -347,6 +347,7 @@ function createOverlay (serverId, channelId, streamingUsr) {
         user-select: none;
         pointer-events: none;
         margin-top: -12px !important;
+        zoom: ${preferences.preferences.Interface.scale};
       }
       img[class^="Voice_avatar"] {
         opacity: ${parseFloat(preferences.preferences.Interface.opacity) / 100};
@@ -464,6 +465,7 @@ preferences.on('save', (pref) => {
         user-select: none;
         pointer-events: none;
         margin-top: -12px !important;
+        zoom: ${preferences.preferences.Interface.scale};
       }
       img[class^="Voice_avatar"] {
         opacity: ${parseFloat(preferences.preferences.Interface.opacity) / 100};

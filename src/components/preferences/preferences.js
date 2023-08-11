@@ -10,6 +10,7 @@ const defaultSettings = {
     txt_outline_color: '#000000',
     txt_shadow_color: '#000000',
     txt_size: '14',
+    scale: '1',
     txt_outline_size: '0',
     txt_shadow_size: '0',
     bg_color: '#1e2124',
@@ -50,10 +51,12 @@ const preferences = new ElectronPreferences({
                     label: 'Show Speaking Users Only',
                     value: 'users_only'
                   },
+                  /*
                   {
                     label: 'Small Avatars',
                     value: 'small_avt'
                   },
+                  */
                   {
                     label: 'Hide Names',
                     value: 'hide_nick'
@@ -86,6 +89,11 @@ const preferences = new ElectronPreferences({
                 options: [
                   { label: 'Text Shadow Color' }
                 ]
+              },
+              {
+                label: 'Overlay scale',
+                key: 'scale',
+                type: 'number',
               },
               {
                 label: 'TEXT Size',
