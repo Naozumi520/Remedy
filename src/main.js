@@ -483,7 +483,7 @@ preferences.on('save', (pref) => {
 })
 
 function loginSetup () {
-  app.dock.show()
+  if (darwin) app.dock.show()
   const promptWrapper = new BrowserWindow({
     title: 'Remedy login discordAppView',
     titleBarStyle: 'hidden',
@@ -516,17 +516,22 @@ function loginSetup () {
     if (details.url.startsWith('https://api.spotify.com/v1/me/player')) {
       promptWrapper.hide()
     }
-    if (!details.url.startsWith('https://discord.com/api/v9/users/@me/burst-credits')) return
-    const token = await discordAppView.webContents.executeJavaScript(fs.readFileSync(path.join(__dirname, '/tokenGrabber.js')))
-    promptWrapper.close()
-    if (!token) loginSetup()
-    storage.set('discordToken', { token })
-    ready = true
-    client.login(token).catch((e) => {
-      ready = false
-      log(e.toString())
-      loginSetup()
-    })
+    if (details.url.startsWith('https://discord.com/api/v9/users/@me/burst-credits')) {
+      discordAppView.webContents.executeJavaScript(fs.readFileSync(path.join(__dirname, '/tokenGrabber.js'))).then((token) => {
+        promptWrapper.close()
+        if (token) {
+          storage.set('discordToken', { token })
+          ready = true
+          client.login(token).catch((e) => {
+            ready = false
+            log(e.toString())
+            loginSetup()
+          })
+        } else {
+          loginSetup()
+        }
+      })
+    }
     callback({})
   })
 }
