@@ -373,8 +373,11 @@ function createOverlay (serverId, channelId, streamingUsr) {
 
 client.on('ready', async () => {
   log(`logged in with account ${client.user.username}.`)
-  if (process.platform !== 'darwin') darwin = false
-  app.dock.hide()
+  if (process.platform !== 'darwin') {
+    darwin = false
+  } else {
+    app.dock.show()
+  }
   if (client.user.voice.channel !== null && client.user.voice.channelId !== null) {
     serverId = client.user.voice.channel.guildId
     channelId = client.user.voice.channelId
@@ -500,7 +503,7 @@ function loginSetup () {
   promptWrapper.setBrowserView(discordAppView)
   discordAppView.setBounds({ x: 0, y: 0, width: 900, height: 600 })
   setTimeout(() => {
-    promptWrapper.show()
+    promptWrapper?.show()
   }, 1000)
   promptWrapper.on('close', () => {
     setTimeout(() => {
@@ -516,13 +519,13 @@ function loginSetup () {
     if (details.url.startsWith('https://api.spotify.com/v1/me/player')) {
       promptWrapper.hide()
     }
-    if (details.url.startsWith('https://discord.com/api/v9/users/@me/burst-credits')) {
+    if (details.url.startsWith('https://cdn.discordapp.com/icons/')) {
       discordAppView.webContents.executeJavaScript(fs.readFileSync(path.join(__dirname, '/tokenGrabber.js'))).then((token) => {
-        promptWrapper.close()
+        promptWrapper?.close()
         if (token) {
           storage.set('discordToken', { token })
           ready = true
-          client.login(token).catch((e) => {
+          client.login(token).catch((e) => { // If error
             ready = false
             log(e.toString())
             loginSetup()
